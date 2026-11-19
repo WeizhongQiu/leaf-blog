@@ -23,7 +23,7 @@ pnpm dev
 | `pnpm lint`         | 检查 TypeScript、Solid 响应式用法和浏览器导入边界 |
 | `pnpm format:check` | 检查代码与文档格式                                |
 | `pnpm format`       | 格式化代码与文档                                  |
-| `pnpm build`        | 检查类型和文章元数据后构建到 `dist/`              |
+| `pnpm build`        | 检查类型、编译文章并构建到 `dist/`                |
 | `pnpm preview`      | 预览生产构建产物                                  |
 
 ## 当前结构
@@ -33,14 +33,16 @@ pnpm dev
 - `src/components/Layout.tsx`：共享布局，通过 `props.children` 展示页面。
 - `src/pages/`：页面组件。
 - `src/types/post.ts`：文章元数据、渲染结果和加载器类型。
-- `build/content/metadata.ts`：扫描和校验文章元数据。
+- `build/metadata.ts`：扫描和校验文章元数据。
+- `build/markdown.ts`：编译 Markdown、代码高亮和公式。
+- `build/plugin.ts`：提供 Vite 文章模块和开发刷新。
 - `blog.config.json`：项目配置，目前提供文章目录设置。
-- `vite.config.ts`：Solid JSX/TSX 转换和生产构建时的文章校验。
+- `vite.config.ts`：接入 Solid JSX/TSX 转换和博客内容插件。
 - `tsconfig.app.json` / `tsconfig.node.json`：分别约束浏览器与构建端类型环境。
 - `tsconfig.paths.json`：声明 `@/` 指向项目根目录。应用内导入和构建端类型导入可写成 `@/src/types/post.ts`。Vite 加载配置时沿用相对路径。
 - `eslint.config.js`：Solid、TypeScript 规则及浏览器导入 Node.js 模块的限制。
 
-新增页面时，在 `src/pages/` 实现组件，在 `src/App.tsx` 注册 `<Route>`，并按需在布局中增加导航；组件式路由使用与 Solid 1.x 兼容的 `@solidjs/router` 0.15。正文编译、About 及文章页面按照 `plan.md` 后续阶段实施。
+新增页面时，在 `src/pages/` 实现组件，在 `src/App.tsx` 注册 `<Route>`，并按需在布局中增加导航。组件式路由使用与 Solid 1.x 兼容的 `@solidjs/router` 0.15。About 及文章页面按照 `plan.md` 后续阶段实施。
 
 模板图片、图标、计数器及演示样式已移除。TypeScript 固定为 6.0.3，以匹配当前 `typescript-eslint` 支持范围。依赖版本由 `pnpm-lock.yaml` 锁定。
 
@@ -52,4 +54,10 @@ pnpm dev
 
 构建时从项目根目录的 `blog.config.json` 读取文章目录。编辑 `postsDirectory` 即可修改。默认值为 `content/posts`，相对路径以项目根目录为基准，也支持绝对路径。目录须已存在，可以为空。
 
-`pnpm build` 会扫描并校验文章。失败时会用英文报告相对于所选文章目录的文件路径、字段和原因。文件名重复时还会指出另一篇文章的路径。
+## 正文编译
+
+使用 `virtual:blog/posts` 获取按日期排序的元数据，使用 `virtual:blog/loaders` 按不含 `.md` 的文件名查找正文加载器。调用 `loaders[fileName]?.()` 会按需导入该篇文章，模块的默认导出包含 `meta` 和 `html`。
+
+`pnpm build` 会扫描并编译文章。未知代码语言会给出英文提示并以纯文本显示，无效的 KaTeX 公式会带文章路径阻止构建。文件名重复时，会指出冲突的两篇文章。开发时按请求编译正文，新增、修改、重命名或删除文章会触发整页刷新。
+
+正文支持 `$...$` 行内公式和 `$$...$$` 块级公式。文章展示页面和 KaTeX 样式在阶段四接入。

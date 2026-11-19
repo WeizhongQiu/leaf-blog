@@ -3,7 +3,20 @@ import { basename, join, relative, sep } from 'node:path'
 import matter from 'gray-matter'
 import type { PostMeta } from '@/src/types/post.ts'
 
-const markdownExtension = '.md'
+export const markdownExtension = '.md'
+
+interface PostFile {
+  filePath: string
+  relativePath: string
+}
+
+export interface PostSource extends PostFile {
+  meta: PostMeta
+}
+
+export function postFileName(path: string): string {
+  return basename(path).slice(0, -markdownExtension.length)
+}
 
 function contentError(
   path: string,
@@ -46,20 +59,17 @@ function resolvePostDate(
   return date
 }
 
-function readFrontMatter(
-  source: string,
-  path: string,
-): Record<string, unknown> {
+function readFrontMatter(source: string, path: string) {
   // Only plain fences select YAML. Gray Matter also supports named engines.
   const opening = /^\uFEFF?---[ \t]*\r?\n/.exec(source)
   if (!opening || !/^---[ \t]*\r?$/m.test(source.slice(opening[0].length))) {
-    return {}
+    return { fields: {}, body: source }
   }
 
-  let data: unknown
+  let parsed: ReturnType<typeof matter>
   try {
     // Passing options disables Gray Matter's cache of whole articles.
-    data = matter(source, { language: 'yaml' }).data
+    parsed = matter(source, { language: 'yaml' })
   } catch (cause) {
     const reason = cause instanceof Error ? cause.message : String(cause)
     throw contentError(
@@ -70,6 +80,7 @@ function readFrontMatter(
     )
   }
 
+  const data: unknown = parsed.data
   if (
     typeof data !== 'object' ||
     data === null ||
@@ -78,31 +89,34 @@ function readFrontMatter(
     throw contentError(path, 'Front Matter', 'Expected a YAML mapping.')
   }
 
-  return data as Record<string, unknown>
+  return { fields: data as Record<string, unknown>, body: parsed.content }
 }
 
-function readPostMeta(
-  filePath: string,
-  path: string,
-  fileName: string,
-): PostMeta {
+export function readPost({ filePath, relativePath }: PostFile): {
+  meta: PostMeta
+  body: string
+} {
   let source: string
   try {
     source = readFileSync(filePath, 'utf8')
   } catch (cause) {
-    throw contentError(path, 'file', 'Could not read the post.', cause)
+    throw contentError(relativePath, 'file', 'Could not read the post.', cause)
   }
 
-  const fields = readFrontMatter(source, path)
+  const { fields, body } = readFrontMatter(source, relativePath)
+  const fileName = postFileName(relativePath)
   return {
-    title: text(fields.title) || fileName,
-    date: resolvePostDate(fields.date, filePath, path),
-    fileName,
-    description: text(fields.description),
+    meta: {
+      title: text(fields.title) || fileName,
+      date: resolvePostDate(fields.date, filePath, relativePath),
+      fileName,
+      description: text(fields.description),
+    },
+    body,
   }
 }
 
-export function scanPostMetadata(directory: string): PostMeta[] {
+export function scanPosts(directory: string): PostSource[] {
   let paths: string[]
   try {
     paths = readdirSync(directory, { recursive: true, withFileTypes: true })
@@ -126,7 +140,7 @@ export function scanPostMetadata(directory: string): PostMeta[] {
 
   const pathsByFileName = new Map<string, string>()
   const posts = paths.map((path) => {
-    const fileName = basename(path).slice(0, -markdownExtension.length)
+    const fileName = postFileName(path)
     if (!fileName || fileName === '.' || fileName === '..') {
       throw contentError(
         path,
@@ -145,10 +159,11 @@ export function scanPostMetadata(directory: string): PostMeta[] {
     }
 
     pathsByFileName.set(fileName, path)
-    return readPostMeta(join(directory, path), path, fileName)
+    const file = { filePath: join(directory, path), relativePath: path }
+    return { ...file, meta: readPost(file).meta }
   })
 
-  return posts.sort((left, right) => {
+  return posts.sort(({ meta: left }, { meta: right }) => {
     if (left.date !== right.date) return left.date > right.date ? -1 : 1
     if (left.fileName === right.fileName) return 0
     return left.fileName < right.fileName ? -1 : 1
