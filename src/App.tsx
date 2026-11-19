@@ -1,7 +1,7 @@
 import { Router, Route } from '@solidjs/router'
-import Layout from './components/Layout'
-import HomePage from './pages/HomePage'
-import NotFoundPage from './pages/NotFoundPage'
+import Layout from '@/src/components/Layout.tsx'
+import HomePage from '@/src/pages/HomePage.tsx'
+import NotFoundPage from '@/src/pages/NotFoundPage.tsx'
 
 export default function App() {
   return (

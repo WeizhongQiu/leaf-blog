@@ -25,12 +25,13 @@ export default tseslint.config(
         {
           paths: builtinModules.map((name) => ({
             name,
-            message: '浏览器代码不能导入 Node.js 内置模块。',
+            message: 'Browser code must not import built-in Node.js modules.',
           })),
           patterns: [
             {
               group: ['node:*', '**/build/**', '**/vite.config*'],
-              message: '浏览器代码不能导入 Node.js 或构建端模块。',
+              message:
+                'Browser code must not import Node.js or build-time modules.',
             },
           ],
         },
