@@ -1,6 +1,6 @@
 # Leaf Blog
 
-Solid + TypeScript + Vite 的最小工程，使用浏览器默认样式。当前提供首页、History 路由、共享页头与页脚，以及未找到页面。
+使用 Solid、TypeScript 和 Vite 的 Markdown 博客。提供首页、时间线、文章页、随机文章和 About 页面。
 
 ## 环境与运行
 
@@ -29,20 +29,20 @@ pnpm dev
 ## 当前结构
 
 - `src/index.tsx`：应用挂载入口。
-- `src/App.tsx`：显式注册首页和未找到页面的路由。
+- `src/App.tsx`：显式注册首页、时间线、随机文章、文章、About 和未找到页面的路由。
 - `src/components/Layout.tsx`：共享布局，通过 `props.children` 展示页面。
 - `src/pages/`：页面组件。
 - `src/types/post.ts`：文章元数据、渲染结果和加载器类型。
 - `build/metadata.ts`：扫描和校验文章元数据。
 - `build/markdown.ts`：编译 Markdown、代码高亮和公式。
-- `build/plugin.ts`：提供 Vite 文章模块和开发刷新。
-- `blog.config.json`：项目配置，目前提供文章目录设置。
+- `build/plugin.ts`：提供 Vite 文章和 About 模块，以及 Markdown 文件变更后的开发刷新。
+- `blog.config.json`：配置文章目录 `postsDirectory`、博客名 `siteName`、首页大标题 `homeTitle` 和小标题 `homeSubtitle`。
 - `vite.config.ts`：接入 Solid JSX/TSX 转换和博客内容插件。
 - `tsconfig.app.json` / `tsconfig.node.json`：分别约束浏览器与构建端类型环境。
 - `tsconfig.paths.json`：声明 `@/` 指向项目根目录。应用内导入和构建端类型导入可写成 `@/src/types/post.ts`。Vite 加载配置时沿用相对路径。
 - `eslint.config.js`：Solid、TypeScript 规则及浏览器导入 Node.js 模块的限制。
 
-新增页面时，在 `src/pages/` 实现组件，在 `src/App.tsx` 注册 `<Route>`，并按需在布局中增加导航。组件式路由使用与 Solid 1.x 兼容的 `@solidjs/router` 0.15。About 及文章页面按照 `plan.md` 后续阶段实施。
+新增页面时，在 `src/pages/` 实现组件，在 `src/App.tsx` 注册 `<Route>`，并按需在布局中增加导航。组件式路由使用与 Solid 1.x 兼容的 `@solidjs/router` 0.15。
 
 模板图片、图标、计数器及演示样式已移除。TypeScript 固定为 6.0.3，以匹配当前 `typescript-eslint` 支持范围。依赖版本由 `pnpm-lock.yaml` 锁定。
 
@@ -60,4 +60,8 @@ pnpm dev
 
 `pnpm build` 会扫描并编译文章。未知代码语言会给出英文提示并以纯文本显示，无效的 KaTeX 公式会带文章路径阻止构建。文件名重复时，会指出冲突的两篇文章。开发时按请求编译正文，新增、修改、重命名或删除文章会触发整页刷新。
 
-正文支持 `$...$` 行内公式和 `$$...$$` 块级公式。文章展示页面和 KaTeX 样式在阶段四接入。
+正文支持 `$...$` 行内公式和 `$$...$$` 块级公式。右侧目录从 Markdown 标题生成，纵线上的深色短线随阅读位置移动，实心点标出最外层标题。
+
+`blog.config.json` 中的 `tocAutoHide` 默认为 `true`。目录收起时，短线右侧显示当前章节和全文阅读进度。鼠标移入或键盘聚焦时显示完整目录。设为 `false` 后始终显示完整目录。
+
+在项目根目录添加 `ABOUT.md` 即可编辑 `/about` 的正文。文件使用普通 Markdown，缺省时页面正文为空。

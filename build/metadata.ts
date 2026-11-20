@@ -116,12 +116,15 @@ export function readPost({ filePath, relativePath }: PostFile): {
   }
 }
 
-export function scanPosts(directory: string): PostSource[] {
+export function scanPosts(directory: string, aboutFile: string): PostSource[] {
   let paths: string[]
   try {
     paths = readdirSync(directory, { recursive: true, withFileTypes: true })
       .filter(
-        (entry) => entry.isFile() && entry.name.endsWith(markdownExtension),
+        (entry) =>
+          entry.isFile() &&
+          entry.name.endsWith(markdownExtension) &&
+          join(entry.parentPath, entry.name) !== aboutFile,
       )
       .map((entry) =>
         relative(directory, join(entry.parentPath, entry.name))

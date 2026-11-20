@@ -3,7 +3,7 @@ import { fromHighlighter } from '@shikijs/markdown-it'
 import { renderToString } from 'katex'
 import MarkdownIt from 'markdown-it'
 import { createHighlighter } from 'shiki'
-import type { RenderedPost } from '@/src/types/post.ts'
+import type { PostHeading, RenderedPost } from '@/src/types/post.ts'
 import { readPost, type PostSource } from './metadata.ts'
 
 const theme = 'github-light'
@@ -86,24 +86,63 @@ async function createMarkdownRenderer() {
       }),
   })
 
+  markdown.core.ruler.after('inline', 'post-headings', ({ tokens, env }) => {
+    const headings = env.headings as PostHeading[] | undefined
+    if (!headings) return
+
+    const ids = new Set<string>()
+    for (const [index, token] of tokens.entries()) {
+      if (token.type !== 'heading_open') continue
+      const inline = tokens[index + 1]
+      const title = (inline.children ?? [])
+        .map((child) => child.content)
+        .join('')
+      const slug = title
+        .toLowerCase()
+        .replace(/[^\p{L}\p{M}\p{N}]+/gu, '-')
+        .replace(/^-|-$/g, '')
+      const base = `section-${slug || headings.length + 1}`
+      let id = base
+      for (let suffix = 2; ids.has(id); suffix++) id = `${base}-${suffix}`
+      ids.add(id)
+      token.attrSet('id', id)
+      headings.push({
+        id,
+        title: title.trim() || id,
+        level: Number(token.tag[1]),
+      })
+    }
+  })
+
   return markdown
 }
 
 let renderer: ReturnType<typeof createMarkdownRenderer> | undefined
+
+export async function renderMarkdown(
+  body: string,
+  path: string,
+  warn: (message: string) => void,
+  headings?: PostHeading[],
+): Promise<string> {
+  try {
+    const markdown = await (renderer ??= createMarkdownRenderer())
+    return markdown.render(body, {
+      headings,
+      warn: (message: string) => warn(`${path} [code] ${message}`),
+    })
+  } catch (cause) {
+    const reason = cause instanceof Error ? cause.message : String(cause)
+    throw new Error(`${path} [Markdown] ${reason}`, { cause })
+  }
+}
 
 export async function renderPost(
   post: PostSource,
   warn: (message: string) => void,
 ): Promise<RenderedPost> {
   const { meta, body } = readPost(post)
-  try {
-    const markdown = await (renderer ??= createMarkdownRenderer())
-    const html = markdown.render(body, {
-      warn: (message: string) => warn(`${post.relativePath} [code] ${message}`),
-    })
-    return { meta, html }
-  } catch (cause) {
-    const reason = cause instanceof Error ? cause.message : String(cause)
-    throw new Error(`${post.relativePath} [Markdown] ${reason}`, { cause })
-  }
+  const headings: PostHeading[] = []
+  const html = await renderMarkdown(body, post.relativePath, warn, headings)
+  return { meta, html, headings }
 }

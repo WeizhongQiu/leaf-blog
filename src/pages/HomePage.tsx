@@ -1,10 +1,14 @@
+import { homeSubtitle, homeTitle, siteName } from '@/blog.config.json'
+
 export default function HomePage() {
-  document.title = '首页 | Leaf Blog'
+  document.title = siteName
 
   return (
-    <>
-      <h1>Leaf Blog</h1>
-      <p>Solid + TypeScript + Vite 最小工程已运行。</p>
-    </>
+    <section class="home">
+      <div class="home-intro">
+        <h1>{homeTitle}</h1>
+        <p>{homeSubtitle}</p>
+      </div>
+    </section>
   )
 }

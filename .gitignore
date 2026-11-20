@@ -6,6 +6,11 @@ coverage/
 .pnpm-store/
 *.tsbuildinfo
 
+# Local blog content
+/content/
+/post/
+/posts/
+
 # Local environment
 .env
 .env.*

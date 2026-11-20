@@ -13,5 +13,11 @@ if (typeof postsDirectory !== 'string' || !postsDirectory.trim()) {
 
 export default defineConfig({
   resolve: { tsconfigPaths: true },
-  plugins: [solid(), blogContent(resolve(import.meta.dirname, postsDirectory))],
+  plugins: [
+    solid(),
+    blogContent(
+      resolve(import.meta.dirname, postsDirectory),
+      resolve(import.meta.dirname, 'ABOUT.md'),
+    ),
+  ],
 })

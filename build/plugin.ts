@@ -1,11 +1,13 @@
+import { readFileSync } from 'node:fs'
 import { isAbsolute, relative, sep } from 'node:path'
 import type { EnvironmentModuleNode, Plugin } from 'vite'
 import type { RenderedPost } from '@/src/types/post.ts'
-import { renderPost } from './markdown.ts'
+import { renderMarkdown, renderPost } from './markdown.ts'
 import { markdownExtension, postFileName, scanPosts } from './metadata.ts'
 
 const postsModule = 'virtual:blog/posts'
 const loadersModule = 'virtual:blog/loaders'
+const aboutModule = 'virtual:blog/about'
 const postModulePrefix = 'virtual:blog/post/'
 const postQuery = '?blog'
 
@@ -19,8 +21,8 @@ function postModuleId(fileName: string): string {
   return `${postModulePrefix}${key}${markdownExtension}`
 }
 
-function indexPosts(directory: string) {
-  const posts = scanPosts(directory)
+function indexPosts(directory: string, aboutFile: string) {
+  const posts = scanPosts(directory, aboutFile)
   const modules = new Map(
     posts.map((post) => [
       resolveVirtualId(postModuleId(post.meta.fileName)),
@@ -30,9 +32,18 @@ function indexPosts(directory: string) {
   return { posts, modules }
 }
 
-export function blogContent(directory: string): Plugin {
+function readAbout(file: string): string {
+  try {
+    return readFileSync(file, 'utf8')
+  } catch (cause) {
+    if ((cause as NodeJS.ErrnoException).code === 'ENOENT') return ''
+    throw new Error('Could not read ABOUT.md.', { cause })
+  }
+}
+
+export function blogContent(directory: string, aboutFile: string): Plugin {
   let index: ReturnType<typeof indexPosts> | undefined
-  const getIndex = () => (index ??= indexPosts(directory))
+  const getIndex = () => (index ??= indexPosts(directory, aboutFile))
   const builtPosts = new Map<string, RenderedPost>()
 
   return {
@@ -59,7 +70,7 @@ export function blogContent(directory: string): Plugin {
     },
 
     resolveId(id) {
-      if (id === postsModule || id === loadersModule)
+      if (id === postsModule || id === loadersModule || id === aboutModule)
         return resolveVirtualId(id)
       if (
         id.startsWith(postModulePrefix) &&
@@ -70,6 +81,18 @@ export function blogContent(directory: string): Plugin {
     },
 
     async load(id) {
+      if (id === resolveVirtualId(aboutModule)) {
+        // In dev, the root watcher handles the optional file without resolving it as an import.
+        if (this.environment.mode === 'build') this.addWatchFile(aboutFile)
+        const source = readAbout(aboutFile)
+        const html = source
+          ? await renderMarkdown(source, 'ABOUT.md', (message) =>
+              this.warn(message),
+            )
+          : ''
+        return `export default ${JSON.stringify(html)};`
+      }
+
       if (id === resolveVirtualId(postsModule)) {
         return `export default ${JSON.stringify(getIndex().posts.map(({ meta }) => meta))};`
       }
@@ -100,21 +123,23 @@ export function blogContent(directory: string): Plugin {
 
     hotUpdate({ file, timestamp }) {
       const path = relative(directory, file)
-      if (
-        !path.endsWith(markdownExtension) ||
-        isAbsolute(path) ||
-        path.startsWith(`..${sep}`)
-      )
-        return
+      let ids: string[]
+      if (file === aboutFile) {
+        ids = [aboutModule]
+      } else {
+        if (
+          !path.endsWith(markdownExtension) ||
+          isAbsolute(path) ||
+          path.startsWith(`..${sep}`)
+        )
+          return
+        index = undefined
+        ids = [postsModule, loadersModule, postModuleId(postFileName(path))]
+      }
 
-      index = undefined
       const graph = this.environment.moduleGraph
       const seen = new Set<EnvironmentModuleNode>()
-      for (const id of [
-        postsModule,
-        loadersModule,
-        postModuleId(postFileName(path)),
-      ]) {
+      for (const id of ids) {
         const module = graph.getModuleById(resolveVirtualId(id))
         if (module) graph.invalidateModule(module, seen, timestamp, true)
       }

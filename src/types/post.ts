@@ -9,6 +9,13 @@ export interface PostMeta {
 export interface RenderedPost {
   meta: PostMeta
   html: string
+  headings: PostHeading[]
+}
+
+export interface PostHeading {
+  id: string
+  title: string
+  level: number
 }
 
 export type PostLoader = () => Promise<{ default: RenderedPost }>
