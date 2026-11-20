@@ -1,7 +1,7 @@
 /* @refresh reload */
 import { render } from 'solid-js/web'
 import App from '@/src/App.tsx'
-import '@/src/styles.css'
+import '@/src/styles/base.css'
 
 const root = document.getElementById('root')
 

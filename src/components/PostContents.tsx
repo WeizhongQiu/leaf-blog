@@ -10,6 +10,7 @@ import {
 import blogConfig from '@/blog.config.json'
 import ContentsRail from '@/src/components/ContentsRail.tsx'
 import type { PostHeading } from '@/src/types/post.ts'
+import '@/src/styles/post-contents.css'
 
 const autoHide =
   !('tocAutoHide' in blogConfig) || blogConfig.tocAutoHide !== false

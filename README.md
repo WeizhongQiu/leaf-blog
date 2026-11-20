@@ -30,8 +30,10 @@ pnpm dev
 
 - `src/index.tsx`：应用挂载入口。
 - `src/App.tsx`：显式注册首页、时间线、随机文章、文章、About 和未找到页面的路由。
-- `src/components/Layout.tsx`：共享布局，通过 `props.children` 展示页面。
-- `src/pages/`：页面组件。
+- `src/pages/`：页面组件直接放在该目录，专用样式写在对应 TSX 中。
+- `src/components/`：共享组件直接放在该目录，组件专用样式通常写在对应 TSX 中。
+- `src/styles/base.css`：全站共用的颜色、字体、基础规则和页面标题样式。
+- `src/styles/post-contents.css`：由 `PostContents.tsx` 导入的文章目录样式。
 - `src/types/post.ts`：文章元数据、渲染结果和加载器类型。
 - `build/metadata.ts`：扫描和校验文章元数据。
 - `build/markdown.ts`：编译 Markdown、代码高亮和公式。
@@ -42,7 +44,7 @@ pnpm dev
 - `tsconfig.paths.json`：声明 `@/` 指向项目根目录。应用内导入和构建端类型导入可写成 `@/src/types/post.ts`。Vite 加载配置时沿用相对路径。
 - `eslint.config.js`：Solid、TypeScript 规则及浏览器导入 Node.js 模块的限制。
 
-新增页面时，在 `src/pages/` 实现组件，在 `src/App.tsx` 注册 `<Route>`，并按需在布局中增加导航。组件式路由使用与 Solid 1.x 兼容的 `@solidjs/router` 0.15。
+新增页面时，直接在 `src/pages/` 添加 TSX 文件，把专用样式写进组件。样式较长时，可以放到 `src/styles/` 并由对应组件导入。在 `src/App.tsx` 注册路由，并按需在 `src/components/Layout.tsx` 增加导航。组件式路由使用与 Solid 1.x 兼容的 `@solidjs/router` 0.15。
 
 模板图片、图标、计数器及演示样式已移除。TypeScript 固定为 6.0.3，以匹配当前 `typescript-eslint` 支持范围。依赖版本由 `pnpm-lock.yaml` 锁定。
 

@@ -1,5 +1,34 @@
 import { createEffect, For, onCleanup, onMount } from 'solid-js'
 
+const styles = /* css */ `
+.contents-rail {
+  position: absolute;
+  inset-block: 0;
+  inset-inline-start: 0;
+  width: var(--rail-width);
+  height: 100%;
+  pointer-events: none;
+}
+
+.contents-rail-track,
+.contents-rail-marker {
+  stroke-linecap: round;
+}
+
+.contents-rail-track {
+  stroke: #cec6b9;
+}
+
+.contents-rail-marker {
+  stroke: var(--contents-marker);
+  stroke-width: 2px;
+}
+
+.contents-rail-dot {
+  fill: var(--contents-marker);
+}
+`
+
 interface Props {
   rows: number
   position: number
@@ -90,25 +119,28 @@ export default function ContentsRail(props: Props) {
   })
 
   return (
-    <svg ref={svg} class="contents-rail" aria-hidden="true">
-      <line
-        class="contents-rail-line"
-        x1="50%"
-        x2="50%"
-        y1={`${50 / props.rows}%`}
-        y2={`${100 - 50 / props.rows}%`}
-      />
-      <line ref={marker} class="contents-rail-marker" x1="50%" x2="50%" />
-      <For each={props.importantRows}>
-        {(row) => (
-          <circle
-            class="contents-rail-dot"
-            cx="50%"
-            cy={`${((row + 0.5) / props.rows) * 100}%`}
-            r="2.25"
-          />
-        )}
-      </For>
-    </svg>
+    <>
+      <style>{styles}</style>
+      <svg ref={svg} class="contents-rail" aria-hidden="true">
+        <line
+          class="contents-rail-track"
+          x1="50%"
+          x2="50%"
+          y1={`${50 / props.rows}%`}
+          y2={`${100 - 50 / props.rows}%`}
+        />
+        <line ref={marker} class="contents-rail-marker" x1="50%" x2="50%" />
+        <For each={props.importantRows}>
+          {(row) => (
+            <circle
+              class="contents-rail-dot"
+              cx="50%"
+              cy={`${((row + 0.5) / props.rows) * 100}%`}
+              r="2.25"
+            />
+          )}
+        </For>
+      </svg>
+    </>
   )
 }

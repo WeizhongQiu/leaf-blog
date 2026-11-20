@@ -7,6 +7,29 @@ import PostContents from '@/src/components/PostContents.tsx'
 import NotFoundPage from '@/src/pages/NotFoundPage.tsx'
 import type { PostLoader, RenderedPost } from '@/src/types/post.ts'
 
+const styles = /* css */ `
+.post-header {
+  width: 100%;
+  max-width: var(--reading-width);
+  min-width: 0;
+  margin-bottom: 2.6rem;
+}
+
+.post-header time {
+  color: var(--muted);
+  font-size: 0.88rem;
+  font-variant-numeric: tabular-nums;
+  display: block;
+  margin-top: 0.8rem;
+}
+
+.post-layout {
+  display: flex;
+  align-items: flex-start;
+  gap: 3rem;
+}
+`
+
 function ReadingView(props: { post: RenderedPost }) {
   createEffect(() => {
     document.title = `${props.post.meta.title} | ${siteName}`
@@ -14,11 +37,10 @@ function ReadingView(props: { post: RenderedPost }) {
 
   return (
     <div class="page-content">
-      <header class="post-header reading-column">
+      <style>{styles}</style>
+      <header class="post-header">
         <h1 class="page-title">{props.post.meta.title}</h1>
-        <time class="muted" dateTime={props.post.meta.date}>
-          {props.post.meta.date}
-        </time>
+        <time dateTime={props.post.meta.date}>{props.post.meta.date}</time>
       </header>
       <div class="post-layout">
         <MarkdownBody html={props.post.html} />

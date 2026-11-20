@@ -1,7 +1,68 @@
-import { A, useLocation } from '@solidjs/router'
+import { A, useIsRouting, useLocation } from '@solidjs/router'
 import type { RouteSectionProps } from '@solidjs/router'
-import { For } from 'solid-js'
+import { createEffect, For, onCleanup, onMount, Suspense } from 'solid-js'
 import { siteName } from '@/blog.config.json'
+
+const styles = /* css */ `
+.site-shell {
+  width: min(65rem, calc(100% - 4rem));
+  margin-inline: auto;
+}
+
+.site-header-inner,
+.site-nav,
+.site-nav-link {
+  display: flex;
+  align-items: center;
+}
+
+.site-header-inner {
+  justify-content: space-between;
+  gap: 2rem;
+  min-height: var(--header-height);
+}
+
+.site-name,
+.site-nav-link {
+  text-decoration: none;
+}
+
+.site-name {
+  font-family: var(--heading-font);
+  font-size: 1.45rem;
+  font-weight: 600;
+}
+
+.site-nav {
+  gap: 1.75rem;
+}
+
+.site-nav-link {
+  gap: 0.4rem;
+  padding-block: 0.35rem;
+  color: var(--muted);
+  font-size: 0.72rem;
+  font-weight: 650;
+  letter-spacing: 0.08em;
+  transition: color 150ms ease-out;
+}
+
+.site-nav-link svg {
+  width: 1.05rem;
+  height: 1.05rem;
+}
+
+.site-nav-link[aria-current='page'],
+.site-nav-link:hover {
+  color: var(--ink);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .site-nav-link {
+    transition: none;
+  }
+}
+`
 
 const navigation = [
   {
@@ -28,11 +89,45 @@ const navigation = [
 
 export default function Layout(props: RouteSectionProps) {
   const location = useLocation()
+  const isRouting = useIsRouting()
+  let main!: HTMLElement
+
+  onMount(() => {
+    const motion = window.matchMedia('(prefers-reduced-motion: reduce)')
+    let previousPath: string | undefined
+    let animation: Animation | undefined
+    const cancelAnimation = () => animation?.cancel()
+
+    createEffect(() => {
+      const path = location.pathname
+      if (isRouting() || path === previousPath) return
+
+      const opening = previousPath === undefined
+      previousPath = path
+      cancelAnimation()
+      if (motion.matches || (opening && path !== '/')) return
+
+      animation = main.animate(
+        [
+          { opacity: opening ? 0 : 0.5, transform: 'translateY(6px)' },
+          { opacity: 1, transform: 'none' },
+        ],
+        { duration: opening ? 420 : 220, easing: 'ease-out' },
+      )
+    })
+
+    motion.addEventListener('change', cancelAnimation)
+    onCleanup(() => {
+      motion.removeEventListener('change', cancelAnimation)
+      cancelAnimation()
+    })
+  })
 
   return (
     <>
-      <header class="site-header">
-        <div class="page-shell header-inner">
+      <style>{styles}</style>
+      <header>
+        <div class="site-shell site-header-inner">
           <A href="/" end class="site-name">
             {siteName}
           </A>
@@ -42,7 +137,7 @@ export default function Layout(props: RouteSectionProps) {
                 <A
                   href={item.href}
                   end
-                  class="nav-link"
+                  class="site-nav-link"
                   state={
                     item.href === '/random'
                       ? { from: location.pathname }
@@ -67,7 +162,17 @@ export default function Layout(props: RouteSectionProps) {
           </nav>
         </div>
       </header>
-      <main class="page-shell">{props.children}</main>
+      <main ref={main} class="site-shell">
+        <Suspense
+          fallback={
+            <p class="page-content muted" role="status">
+              正在加载…
+            </p>
+          }
+        >
+          {props.children}
+        </Suspense>
+      </main>
     </>
   )
 }
