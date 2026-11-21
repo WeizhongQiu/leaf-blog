@@ -7,20 +7,25 @@
 
 .contents-nav {
   --contents-marker: #a19888;
+  --contents-transition-duration: 340ms;
   --row-height: 1.75rem;
   --rail-width: 2.125rem;
-  max-height: calc(100vh - 8rem);
+  --contents-viewport: max(0px, calc(100dvh - 8rem));
+  --contents-padding: 0.3rem;
+  max-height: var(--contents-viewport);
   overflow: auto;
-  padding: 0.3rem;
-  pointer-events: none;
+  padding: var(--contents-padding);
   scrollbar-width: thin;
   scrollbar-color: transparent transparent;
   overscroll-behavior: contain;
 }
 
 .contents-nav:is([data-auto-hide='false'], :hover, :has(:focus-visible)) {
-  pointer-events: auto;
   scrollbar-color: var(--line) transparent;
+}
+
+.contents-nav[data-auto-hide='true']:is(:hover, :has(:focus-visible)) {
+  --contents-rail-trim: 1;
 }
 
 .contents-nav ol {
@@ -34,6 +39,19 @@
   position: relative;
 }
 
+.contents-list {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-block-size: max(
+    0px,
+    min(
+      calc(7rem + var(--row-height)),
+      calc(var(--contents-viewport) - 2 * var(--contents-padding))
+    )
+  );
+}
+
 .contents-link {
   display: flex;
   align-items: center;
@@ -41,7 +59,6 @@
   height: var(--row-height);
   color: var(--muted);
   font-size: 0.8rem;
-  pointer-events: auto;
   text-decoration: none;
 }
 
@@ -65,8 +82,8 @@
   pointer-events: none;
   transform: translateX(-0.35rem);
   transition:
-    opacity 160ms ease-out,
-    transform 210ms cubic-bezier(0.22, 1, 0.36, 1);
+    opacity var(--contents-transition-duration) ease-out,
+    transform var(--contents-transition-duration) ease-out;
 }
 
 .contents-nav:is([data-auto-hide='false'], :hover, :has(:focus-visible))
@@ -95,9 +112,9 @@
   pointer-events: none;
   transform: translateY(-50%);
   transition:
-    opacity 160ms ease-out,
-    transform 160ms ease-out,
-    visibility 160ms;
+    opacity var(--contents-transition-duration) ease-out,
+    transform var(--contents-transition-duration) ease-out,
+    visibility var(--contents-transition-duration);
 }
 
 .contents-nav:is(:hover, :has(:focus-visible)) .contents-current {

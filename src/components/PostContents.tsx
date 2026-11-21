@@ -9,6 +9,7 @@ import {
 } from 'solid-js'
 import blogConfig from '@/blog.config.json'
 import ContentsRail from '@/src/components/ContentsRail.tsx'
+import { useSmoothFragmentScroll } from '@/src/fragment-scroll.ts'
 import type { PostHeading } from '@/src/types/post.ts'
 import '@/src/styles/post-contents.css'
 
@@ -29,7 +30,9 @@ export default function PostContents(props: { headings: PostHeading[] }) {
   )
   const anchor = (id: string) => `#${encodeURIComponent(id)}`
   let nav!: HTMLElement
+  let list!: HTMLOListElement
   let scrollHint: HTMLDivElement | undefined
+  const onChapterClick = useSmoothFragmentScroll()
 
   const syncMarker = (position: number, center: number) => {
     setActive(props.headings[Math.round(position)])
@@ -127,6 +130,7 @@ export default function PostContents(props: { headings: PostHeading[] }) {
     const layoutChanged = () => {
       readingLine = readAnchorOffset()
       schedule()
+      revealActiveMark()
     }
     update()
     window.addEventListener('scroll', schedule, { passive: true })
@@ -157,11 +161,12 @@ export default function PostContents(props: { headings: PostHeading[] }) {
         <div class="contents-list">
           <ContentsRail
             rows={props.headings.length}
+            getList={() => list}
             position={markerRow()}
             importantRows={importantRows()}
             onPositionChange={syncMarker}
           />
-          <ol>
+          <ol ref={list}>
             <For each={props.headings}>
               {({ id, title, level }) => (
                 <li>
@@ -169,6 +174,7 @@ export default function PostContents(props: { headings: PostHeading[] }) {
                     class="contents-link"
                     href={anchor(id)}
                     target="_self"
+                    onClick={onChapterClick}
                     aria-current={active()?.id === id ? 'location' : undefined}
                     style={{ '--depth': Math.min(3, level - shallowest()) }}
                   >

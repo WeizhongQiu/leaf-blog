@@ -1,7 +1,7 @@
 import { useParams } from '@solidjs/router'
 import { createEffect, createMemo, createResource, Show } from 'solid-js'
 import loaders from 'virtual:blog/loaders'
-import { siteName } from '@/blog.config.json'
+import { authorName } from '@/blog.config.json'
 import MarkdownBody from '@/src/components/MarkdownBody.tsx'
 import PostContents from '@/src/components/PostContents.tsx'
 import NotFoundPage from '@/src/pages/NotFoundPage.tsx'
@@ -32,7 +32,7 @@ const styles = /* css */ `
 
 function ReadingView(props: { post: RenderedPost }) {
   createEffect(() => {
-    document.title = `${props.post.meta.title} | ${siteName}`
+    document.title = `${props.post.meta.title} | ${authorName}`
   })
 
   return (

@@ -1,4 +1,4 @@
-import { createEffect, For, onCleanup, onMount } from 'solid-js'
+import { createEffect, createSignal, For, onCleanup, onMount } from 'solid-js'
 
 const styles = /* css */ `
 .contents-rail {
@@ -7,7 +7,15 @@ const styles = /* css */ `
   inset-inline-start: 0;
   width: var(--rail-width);
   height: 100%;
+  clip-path: inset(
+    calc(var(--contents-rail-center, 50%) * var(--contents-rail-trim, 0))
+    0
+    calc((100% - var(--contents-rail-center, 50%)) * var(--contents-rail-trim, 0))
+    0
+  );
   pointer-events: none;
+  transition: clip-path var(--contents-transition-duration, 340ms)
+    cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .contents-rail-track,
@@ -27,10 +35,17 @@ const styles = /* css */ `
 .contents-rail-dot {
   fill: var(--contents-marker);
 }
+
+@media (prefers-reduced-motion: reduce) {
+  .contents-rail {
+    transition: none;
+  }
+}
 `
 
 interface Props {
   rows: number
+  getList: () => HTMLOListElement
   position: number
   importantRows: number[]
   onPositionChange: (position: number, center: number) => void
@@ -39,11 +54,16 @@ interface Props {
 export default function ContentsRail(props: Props) {
   let svg!: SVGSVGElement
   let marker!: SVGLineElement
+  const [geometry, setGeometry] = createSignal({
+    height: 0,
+    rowHeight: 0,
+    firstCenter: 0,
+  })
 
   onMount(() => {
     const motion = window.matchMedia('(prefers-reduced-motion: reduce)')
+    const list = props.getList()
 
-    let rowHeight = 0
     let frame = 0
     let previousTime = 0
     let target = props.position
@@ -51,14 +71,19 @@ export default function ContentsRail(props: Props) {
     let lowerRow = target
 
     const draw = () => {
+      const { height, rowHeight, firstCenter } = geometry()
       const position = (upperRow + lowerRow) / 2
-      const middle = (position + 0.5) * rowHeight
+      const middle = firstCenter + position * rowHeight
       const stretch = Math.min(10, (lowerRow - upperRow) * rowHeight)
       // The rounded caps add a pixel to each end.
       const halfLength = 7 + stretch / 2
 
       marker.setAttribute('y1', String(middle - halfLength))
       marker.setAttribute('y2', String(middle + halfLength))
+      svg.style.setProperty(
+        '--contents-rail-center',
+        `${height ? (middle / height) * 100 : 50}%`,
+      )
       props.onPositionChange(position, middle)
     }
 
@@ -94,12 +119,20 @@ export default function ContentsRail(props: Props) {
     }
 
     const measure = () => {
-      rowHeight = svg.getBoundingClientRect().height / props.rows
+      const rail = svg.getBoundingClientRect()
+      const entries = list.getBoundingClientRect()
+      const rowHeight = entries.height / props.rows
+      setGeometry({
+        height: rail.height,
+        rowHeight,
+        firstCenter: entries.top - rail.top + rowHeight / 2,
+      })
       draw()
     }
     measure()
     const observer = new ResizeObserver(measure)
     observer.observe(svg)
+    observer.observe(list)
     motion.addEventListener('change', snap)
 
     createEffect(() => {
@@ -126,8 +159,8 @@ export default function ContentsRail(props: Props) {
           class="contents-rail-track"
           x1="50%"
           x2="50%"
-          y1={`${50 / props.rows}%`}
-          y2={`${100 - 50 / props.rows}%`}
+          y1={geometry().rowHeight / 2}
+          y2={geometry().height - geometry().rowHeight / 2}
         />
         <line ref={marker} class="contents-rail-marker" x1="50%" x2="50%" />
         <For each={props.importantRows}>
@@ -135,7 +168,7 @@ export default function ContentsRail(props: Props) {
             <circle
               class="contents-rail-dot"
               cx="50%"
-              cy={`${((row + 0.5) / props.rows) * 100}%`}
+              cy={geometry().firstCenter + row * geometry().rowHeight}
               r="2.25"
             />
           )}

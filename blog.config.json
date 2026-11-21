@@ -1,7 +1,6 @@
 {
   "postsDirectory": "content/posts",
-  "siteName": "Leaf Blog",
-  "homeTitle": "Hi, I'm Qiuwz.",
+  "authorName": "Weichong Chiu",
   "homeSubtitle": "A front-end developer and a blogger.",
   "tocAutoHide": true
 }

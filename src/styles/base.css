@@ -1,5 +1,8 @@
 :root {
-  font-family: system-ui, sans-serif;
+  font-family:
+    Georgia, 'Iowan Old Style', 'Palatino Linotype', 'Noto Serif',
+    'Liberation Serif', 'Songti SC', 'Noto Serif CJK SC', 'Source Han Serif SC',
+    SimSun, serif;
   color: var(--ink);
   background: var(--paper);
   line-height: 1.6;
@@ -7,7 +10,6 @@
   --ink: #292622;
   --muted: #706a5f;
   --line: #d4cec3;
-  --heading-font: Georgia, 'Songti SC', 'Noto Serif CJK SC', serif;
   --header-height: 5rem;
   --reading-width: 46rem;
 }
@@ -24,9 +26,39 @@ a {
   color: inherit;
 }
 
+button,
+input,
+select,
+textarea {
+  font-family: inherit;
+}
+
+pre,
+code,
+kbd,
+samp {
+  font-family: ui-monospace, Menlo, Consolas, 'Liberation Mono', monospace;
+  font-size: 0.875em;
+}
+
+pre code {
+  font-size: inherit;
+}
+
+::selection {
+  background-color: #e5d8c5;
+  color: var(--ink);
+}
+
 :focus-visible {
   outline: 2px solid var(--muted);
   outline-offset: 4px;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  :root[data-smooth-fragment] {
+    scroll-behavior: smooth;
+  }
 }
 
 .page-content {
@@ -35,10 +67,9 @@ a {
 
 .page-title {
   margin: 0;
-  font-family: var(--heading-font);
   line-height: 1.2;
   font-size: 2.75rem;
-  font-weight: 600;
+  font-weight: 400;
   overflow-wrap: anywhere;
 }
 

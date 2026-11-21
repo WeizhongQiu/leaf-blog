@@ -1,9 +1,9 @@
 import html from 'virtual:blog/about'
-import { siteName } from '@/blog.config.json'
+import { authorName } from '@/blog.config.json'
 import MarkdownBody from '@/src/components/MarkdownBody.tsx'
 
 export default function AboutPage() {
-  document.title = `About | ${siteName}`
+  document.title = `About | ${authorName}`
 
   return (
     <div class="page-content">

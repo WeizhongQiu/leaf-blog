@@ -1,8 +1,8 @@
 import { A } from '@solidjs/router'
-import { siteName } from '@/blog.config.json'
+import { authorName } from '@/blog.config.json'
 
 export default function NotFoundPage() {
-  document.title = `页面未找到 | ${siteName}`
+  document.title = `页面未找到 | ${authorName}`
 
   return (
     <section class="page-content">
