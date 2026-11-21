@@ -124,7 +124,7 @@ export function scanPosts(directory: string, aboutFile: string): PostSource[] {
         (entry) =>
           entry.isFile() &&
           entry.name.endsWith(markdownExtension) &&
-          join(entry.parentPath, entry.name) !== aboutFile,
+          relative(aboutFile, join(entry.parentPath, entry.name)) !== '',
       )
       .map((entry) =>
         relative(directory, join(entry.parentPath, entry.name))

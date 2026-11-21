@@ -1,7 +1,12 @@
 import { A, useBeforeLeave, useIsRouting, useLocation } from '@solidjs/router'
 import type { RouteSectionProps } from '@solidjs/router'
 import { createEffect, For, onCleanup, onMount, Show, Suspense } from 'solid-js'
-import { authorName } from '@/blog.config.json'
+import blogConfig from '@/blog.config.json'
+import BackToTop from '@/src/components/BackToTop.tsx'
+
+const { authorName } = blogConfig
+const showBackToTop =
+  !('showBackToTop' in blogConfig) || blogConfig.showBackToTop !== false
 
 const styles = /* css */ `
 .site-shell {
@@ -246,6 +251,9 @@ export default function Layout(props: RouteSectionProps) {
           {props.children}
         </Suspense>
       </main>
+      <Show when={showBackToTop}>
+        <BackToTop />
+      </Show>
     </>
   )
 }

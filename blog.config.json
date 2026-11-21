@@ -1,8 +1,10 @@
 {
-  "postsDirectory": "content/posts",
+  "postsDirectory": "posts",
+  "aboutFile": "ABOUT.md",
   "authorName": "Weichong Chiu",
   "homeSubtitle": "A front-end developer and a blogger.",
   "homeTitleTypingIntervalMs": 25,
   "homeTitlePauseMs": 5000,
-  "tocAutoHide": true
+  "tocAutoHide": true,
+  "showBackToTop": false
 }

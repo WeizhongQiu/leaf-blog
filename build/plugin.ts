@@ -37,7 +37,7 @@ function readAbout(file: string): string {
     return readFileSync(file, 'utf8')
   } catch (cause) {
     if ((cause as NodeJS.ErrnoException).code === 'ENOENT') return ''
-    throw new Error('Could not read ABOUT.md.', { cause })
+    throw new Error(`Could not read About file: ${file}.`, { cause })
   }
 }
 
@@ -82,11 +82,11 @@ export function blogContent(directory: string, aboutFile: string): Plugin {
 
     async load(id) {
       if (id === resolveVirtualId(aboutModule)) {
-        // In dev, the root watcher handles the optional file without resolving it as an import.
+        // The dev watcher can track a missing About file without resolving it as an import.
         if (this.environment.mode === 'build') this.addWatchFile(aboutFile)
         const source = readAbout(aboutFile)
         const html = source
-          ? await renderMarkdown(source, 'ABOUT.md', (message) =>
+          ? await renderMarkdown(source, aboutFile, (message) =>
               this.warn(message),
             )
           : ''
@@ -118,13 +118,13 @@ export function blogContent(directory: string, aboutFile: string): Plugin {
     },
 
     configureServer(server) {
-      server.watcher.add(directory)
+      server.watcher.add([directory, aboutFile])
     },
 
     hotUpdate({ file, timestamp }) {
       const path = relative(directory, file)
       let ids: string[]
-      if (file === aboutFile) {
+      if (relative(aboutFile, file) === '') {
         ids = [aboutModule]
       } else {
         if (

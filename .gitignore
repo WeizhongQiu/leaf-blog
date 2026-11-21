@@ -10,6 +10,7 @@ coverage/
 /content/
 /post/
 /posts/
+ABOUT.md
 
 # Local environment
 .env

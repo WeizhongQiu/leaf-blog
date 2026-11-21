@@ -66,4 +66,6 @@ pnpm dev
 
 `blog.config.json` 中的 `tocAutoHide` 默认为 `true`。目录收起时，短线右侧显示当前章节和全文阅读进度。鼠标移入或键盘聚焦时显示完整目录。设为 `false` 后始终显示完整目录。
 
-在项目根目录添加 `ABOUT.md` 即可编辑 `/about` 的正文。文件使用普通 Markdown，缺省时页面正文为空。
+`showBackToTop` 默认为 `true`，页面向下滚动达到两个视口高度时显示返回顶部按钮。设为 `false` 可关闭。
+
+在 `blog.config.json` 中用 `aboutFile` 指定 `/about` 读取的 Markdown 文件。相对路径以项目根目录为基准，也支持绝对路径。默认使用根目录的 `ABOUT.md`，文件缺失时正文留空。放在文章目录中的 About 文件会从文章扫描中排除。
