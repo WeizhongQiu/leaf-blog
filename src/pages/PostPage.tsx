@@ -15,12 +15,14 @@ const styles = /* css */ `
   margin-bottom: 2.6rem;
 }
 
-.post-header time {
+.post-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem 1rem;
+  margin: 0.8rem 0 0;
   color: var(--muted);
   font-size: 0.88rem;
   font-variant-numeric: tabular-nums;
-  display: block;
-  margin-top: 0.8rem;
 }
 
 .post-layout {
@@ -40,7 +42,19 @@ function ReadingView(props: { post: RenderedPost }) {
       <style>{styles}</style>
       <header class="post-header">
         <h1 class="page-title">{props.post.meta.title}</h1>
-        <time dateTime={props.post.meta.date}>{props.post.meta.date}</time>
+        <p class="post-meta">
+          <span>
+            创建于{' '}
+            <time dateTime={props.post.meta.date}>{props.post.meta.date}</time>
+          </span>
+          <span>
+            修改于{' '}
+            <time dateTime={props.post.meta.modifiedDate}>
+              {props.post.meta.modifiedDate}
+            </time>
+          </span>
+          <span>共 {props.post.wordCount.toLocaleString('zh-CN')} 字</span>
+        </p>
       </header>
       <div class="post-layout">
         <MarkdownBody html={props.post.html} />

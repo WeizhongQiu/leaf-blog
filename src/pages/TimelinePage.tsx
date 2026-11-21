@@ -95,12 +95,17 @@ const styles = /* css */ `
 .timeline-link::before {
   position: absolute;
   inset-inline-start: -3px;
-  top: calc(50% - 2px);
+  top: 50%;
   width: 5px;
   height: 5px;
-  border-radius: 50%;
+  border-radius: 999px;
   background: var(--muted);
   content: '';
+  transform: translateY(-50%);
+}
+
+.timeline-link:is(:hover, :focus-visible)::before {
+  height: 13px;
 }
 
 .timeline-link time {
@@ -152,6 +157,10 @@ const styles = /* css */ `
 
   .timeline-month li {
     animation: timeline-entry var(--entry-duration) ease-out var(--entry-delay) both;
+  }
+
+  .timeline-link::before {
+    transition: height 180ms ease-out;
   }
 
   .timeline-link-title::after {
@@ -269,17 +278,14 @@ export default function TimelinePage() {
                               <time dateTime={post.date}>
                                 {post.date.slice(8)}
                               </time>
-                              <span
-                                class="timeline-link-title"
-                                title={post.title}
-                              >
+                              <span class="timeline-link-title">
                                 {post.title}
                               </span>
                               <span
                                 class="timeline-link-category"
                                 title={post.category}
                               >
-                                {post.category}
+                                # {post.category}
                               </span>
                             </A>
                           </li>

@@ -1,4 +1,4 @@
-import { readdirSync, readFileSync, statSync } from 'node:fs'
+import { readdirSync, readFileSync, statSync, type Stats } from 'node:fs'
 import { basename, join, relative, sep } from 'node:path'
 import matter from 'gray-matter'
 import type { PostMeta } from '@/src/types/post.ts'
@@ -33,20 +33,18 @@ function text(value: unknown): string {
 
 function resolvePostDate(
   value: unknown,
-  filePath: string,
+  birthtime: Date,
   path: string,
 ): string {
   if (value == null || (typeof value === 'string' && !value.trim())) {
-    try {
-      return statSync(filePath).mtime.toISOString().slice(0, 10)
-    } catch (cause) {
+    if (!Number.isFinite(birthtime.getTime()) || birthtime.getTime() === 0) {
       throw contentError(
         path,
         'date',
-        'Could not read the file modification date.',
-        cause,
+        'File creation time is unavailable. Set date in front matter.',
       )
     }
+    return birthtime.toISOString().slice(0, 10)
   }
 
   const date =
@@ -97,10 +95,17 @@ export function readPost({ filePath, relativePath }: PostFile): {
   body: string
 } {
   let source: string
+  let times: Stats
   try {
     source = readFileSync(filePath, 'utf8')
+    times = statSync(filePath)
   } catch (cause) {
-    throw contentError(relativePath, 'file', 'Could not read the post.', cause)
+    throw contentError(
+      relativePath,
+      'file',
+      'Could not read the post or its timestamps.',
+      cause,
+    )
   }
 
   const { fields, body } = readFrontMatter(source, relativePath)
@@ -109,7 +114,8 @@ export function readPost({ filePath, relativePath }: PostFile): {
   return {
     meta: {
       title: text(fields.title) || fileName,
-      date: resolvePostDate(fields.date, filePath, relativePath),
+      date: resolvePostDate(fields.date, times.birthtime, relativePath),
+      modifiedDate: times.mtime.toISOString().slice(0, 10),
       fileName,
       description: text(fields.description),
       category: text(fields.category) || (nested ? firstFolder : '未分类'),
