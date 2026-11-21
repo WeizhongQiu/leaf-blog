@@ -29,7 +29,7 @@ pnpm dev
 ## 当前结构
 
 - `src/index.tsx`：应用挂载入口。
-- `src/App.tsx`：显式注册首页、时间线、随机文章、文章、About 和未找到页面的路由。
+- `src/App.tsx`：显式注册首页、时间线、分类、随机文章、文章、About 和未找到页面的路由。
 - `src/pages/`：页面组件直接放在该目录，专用样式写在对应 TSX 中。
 - `src/components/`：共享组件直接放在该目录，组件专用样式通常写在对应 TSX 中。
 - `src/styles/base.css`：全站共用的颜色、字体、基础规则和页面标题样式。
@@ -53,6 +53,8 @@ pnpm dev
 将 `.md` 文件放在文章目录或其子目录。可以直接从正文开始，也可以在文件开头用一对 `---` 包住 YAML Front Matter。`title` 省略或留空时使用不含 `.md` 的文件名。`date` 填写时使用 `YYYY-MM-DD`，省略或留空时取文件最后修改时间的 UTC 日期。`description` 省略或填入非文本值时按空摘要处理。
 
 文章 URL 使用去掉 `.md` 的文件名，例如 `hello-world.md` 对应 `/posts/hello-world`。不同子目录中的文章也须使用不同文件名。
+
+时间线右侧显示文章分类。`category` 为可选的文本字段，省略或留空时使用文章相对于 `postsDirectory` 的第一级文件夹名。直接放在文章目录下的文件归为「未分类」。
 
 构建时从项目根目录的 `blog.config.json` 读取文章目录。编辑 `postsDirectory` 即可修改。默认值为 `content/posts`，相对路径以项目根目录为基准，也支持绝对路径。目录须已存在，可以为空。
 

@@ -1,6 +1,7 @@
 import { Router, Route } from '@solidjs/router'
 import { lazy } from 'solid-js'
 import Layout from '@/src/components/Layout.tsx'
+import CategoriesPage from '@/src/pages/CategoriesPage.tsx'
 import HomePage from '@/src/pages/HomePage.tsx'
 import NotFoundPage from '@/src/pages/NotFoundPage.tsx'
 import RandomPage from '@/src/pages/RandomPage.tsx'
@@ -14,6 +15,7 @@ export default function App() {
     <Router root={Layout}>
       <Route path="/" component={HomePage} />
       <Route path="/timeline" component={TimelinePage} />
+      <Route path="/categories" component={CategoriesPage} />
       <Route path="/random" component={RandomPage} />
       <Route path="/posts/:fileName" component={PostPage} />
       <Route path="/about" component={AboutPage} />

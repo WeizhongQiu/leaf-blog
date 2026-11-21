@@ -110,6 +110,11 @@ const navigation = [
     icon: 'M12 7v13M12 7C10 5 7.5 4 3 4v13c4.5 0 7 1 9 3 2-2 4.5-3 9-3V4c-4.5 0-7 1-9 3Z',
   },
   {
+    label: 'CATEGORIES',
+    href: '/categories',
+    icon: 'M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2Z',
+  },
+  {
     label: 'RANDOM',
     href: '/random',
     icon: 'M7 3h10a4 4 0 0 1 4 4v10a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4V7a4 4 0 0 1 4-4Z',

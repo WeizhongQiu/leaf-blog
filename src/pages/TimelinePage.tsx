@@ -110,15 +110,27 @@ const styles = /* css */ `
   flex: 0 0 2ch;
 }
 
-.timeline-link span {
-  position: relative;
+.timeline-link-title,
+.timeline-link-category {
   min-width: 0;
   overflow: hidden;
   white-space: nowrap;
   text-overflow: ellipsis;
 }
 
-.timeline-link span::after {
+.timeline-link-title {
+  position: relative;
+}
+
+.timeline-link-category {
+  margin-inline-start: auto;
+  max-inline-size: 35%;
+  flex-shrink: 0;
+  color: var(--muted);
+  font-size: 0.82rem;
+}
+
+.timeline-link-title::after {
   position: absolute;
   inset-inline: 0;
   inset-block-end: 0;
@@ -128,7 +140,7 @@ const styles = /* css */ `
   transform: scale(0, 0.8);
 }
 
-.timeline-link:is(:hover, :focus-visible) span::after {
+.timeline-link:is(:hover, :focus-visible) .timeline-link-title::after {
   transform: scale(1, 0.8);
 }
 
@@ -142,7 +154,7 @@ const styles = /* css */ `
     animation: timeline-entry var(--entry-duration) ease-out var(--entry-delay) both;
   }
 
-  .timeline-link span::after {
+  .timeline-link-title::after {
     transition: transform 180ms ease-out;
   }
 }
@@ -257,7 +269,18 @@ export default function TimelinePage() {
                               <time dateTime={post.date}>
                                 {post.date.slice(8)}
                               </time>
-                              <span title={post.title}>{post.title}</span>
+                              <span
+                                class="timeline-link-title"
+                                title={post.title}
+                              >
+                                {post.title}
+                              </span>
+                              <span
+                                class="timeline-link-category"
+                                title={post.category}
+                              >
+                                {post.category}
+                              </span>
                             </A>
                           </li>
                         )}

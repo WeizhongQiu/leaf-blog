@@ -105,12 +105,14 @@ export function readPost({ filePath, relativePath }: PostFile): {
 
   const { fields, body } = readFrontMatter(source, relativePath)
   const fileName = postFileName(relativePath)
+  const [firstFolder, nested] = relativePath.split('/', 2)
   return {
     meta: {
       title: text(fields.title) || fileName,
       date: resolvePostDate(fields.date, filePath, relativePath),
       fileName,
       description: text(fields.description),
+      category: text(fields.category) || (nested ? firstFolder : '未分类'),
     },
     body,
   }

@@ -4,6 +4,7 @@ export interface PostMeta {
   /** Markdown file name without the .md extension. */
   fileName: string
   description: string
+  category: string
 }
 
 export interface RenderedPost {
