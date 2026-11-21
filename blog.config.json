@@ -2,5 +2,7 @@
   "postsDirectory": "content/posts",
   "authorName": "Weichong Chiu",
   "homeSubtitle": "A front-end developer and a blogger.",
+  "homeTitleTypingIntervalMs": 25,
+  "homeTitlePauseMs": 5000,
   "tocAutoHide": true
 }

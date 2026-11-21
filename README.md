@@ -38,7 +38,7 @@ pnpm dev
 - `build/metadata.ts`：扫描和校验文章元数据。
 - `build/markdown.ts`：编译 Markdown、代码高亮和公式。
 - `build/plugin.ts`：提供 Vite 文章和 About 模块，以及 Markdown 文件变更后的开发刷新。
-- `blog.config.json`：配置文章目录 `postsDirectory`、作者名 `authorName` 和首页副标题 `homeSubtitle`。顶栏显示作者名，首页标题使用 `Hi, I'm {authorName}.`。
+- `blog.config.json`：配置文章目录 `postsDirectory`、作者名 `authorName` 和首页副标题 `homeSubtitle`。顶栏显示作者名，首页标题使用 `Hi, I'm {authorName}.`。打字间隔 `homeTitleTypingIntervalMs` 默认 60 毫秒，打完后的停留时间 `homeTitlePauseMs` 默认 6500 毫秒。
 - `vite.config.ts`：接入 Solid JSX/TSX 转换和博客内容插件。
 - `tsconfig.app.json` / `tsconfig.node.json`：分别约束浏览器与构建端类型环境。
 - `tsconfig.paths.json`：声明 `@/` 指向项目根目录。应用内导入和构建端类型导入可写成 `@/src/types/post.ts`。Vite 加载配置时沿用相对路径。

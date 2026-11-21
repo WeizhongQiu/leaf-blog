@@ -10,6 +10,7 @@
   --ink: #292622;
   --muted: #706a5f;
   --line: #d4cec3;
+  --selection: #e5d8c5;
   --header-height: 5rem;
   --reading-width: 46rem;
 }
@@ -46,7 +47,7 @@ pre code {
 }
 
 ::selection {
-  background-color: #e5d8c5;
+  background-color: var(--selection);
   color: var(--ink);
 }
 
