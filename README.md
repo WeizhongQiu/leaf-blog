@@ -1,6 +1,6 @@
 # Leaf Blog
 
-使用 Solid、TypeScript 和 Vite 的 Markdown 博客。提供首页、时间线、文章页、随机文章和 About 页面。
+使用 Solid、TypeScript 和 Vite 的 Markdown 博客。提供首页、时间线、分类、文章页、随机文章和 About 页面。
 
 ## 环境与运行
 
@@ -29,7 +29,7 @@ pnpm dev
 ## 当前结构
 
 - `src/index.tsx`：应用挂载入口。
-- `src/App.tsx`：显式注册首页、时间线、分类、随机文章、文章、About 和未找到页面的路由。
+- `src/App.tsx`：根据配置注册首页、文章页、可选页面和未找到页面的路由。
 - `src/pages/`：页面组件直接放在该目录，专用样式写在对应 TSX 中。
 - `src/components/`：共享组件直接放在该目录，组件专用样式通常写在对应 TSX 中。
 - `src/styles/base.css`：全站共用的颜色、字体、基础规则和页面标题样式。
@@ -38,7 +38,7 @@ pnpm dev
 - `build/metadata.ts`：扫描和校验文章元数据。
 - `build/markdown.ts`：编译 Markdown、代码高亮和公式。
 - `build/plugin.ts`：提供 Vite 文章和 About 模块，以及 Markdown 文件变更后的开发刷新。
-- `blog.config.json`：配置文章目录 `postsDirectory`、作者名 `authorName` 和首页副标题 `homeSubtitle`。顶栏显示作者名，首页标题使用 `Hi, I'm {authorName}.`。打字间隔 `homeTitleTypingIntervalMs` 默认 60 毫秒，打完后的停留时间 `homeTitlePauseMs` 默认 6500 毫秒。
+- `blog.config.json`：管理全局与页面配置。
 - `vite.config.ts`：接入 Solid JSX/TSX 转换和博客内容插件。
 - `tsconfig.app.json` / `tsconfig.node.json`：分别约束浏览器与构建端类型环境。
 - `tsconfig.paths.json`：声明 `@/` 指向项目根目录。应用内导入和构建端类型导入可写成 `@/src/types/post.ts`。Vite 加载配置时沿用相对路径。
@@ -48,15 +48,43 @@ pnpm dev
 
 模板图片、图标、计数器及演示样式已移除。TypeScript 固定为 6.0.3，以匹配当前 `typescript-eslint` 支持范围。依赖版本由 `pnpm-lock.yaml` 锁定。
 
+## 博客配置
+
+`blog.config.json` 根级设置包括 `authorName`、`showBackToTop` 和 `fontWeight`。顶栏显示作者名，首页标题使用 `Hi, I'm {authorName}.`。打字间隔固定为 25 毫秒，打完后停留 5 秒。
+
+`fontWeight` 控制正文和列表的 Noto Sans SC 字重，`light` 为 300（默认值），`normal` 为 400。首页标题、副标题、顶栏和已有衬线标题沿用原字体。
+
+| 配置项                   | 用途                                                |
+| ------------------------ | --------------------------------------------------- |
+| `page.homepage.subtitle` | 首页副标题                                          |
+| `page.post.directory`    | 文章目录                                            |
+| `page.post.tocAutoHide`  | 文章目录是否自动收起，默认为 `true`                 |
+| `page.about.file`        | About 页的 Markdown 文件，默认为根目录的 `ABOUT.md` |
+| `page.timeline.show`     | 是否启用时间线                                      |
+| `page.categories.show`   | 是否启用分类页                                      |
+| `page.random.show`       | 是否启用随机文章                                    |
+| `page.about.show`        | 是否启用 About                                      |
+
+可选页面的 `show` 默认为 `true`。设为 `false` 后，构建跳过该页面模块，路由和顶栏入口关闭。直接访问该地址会显示未找到页面。首页与文章页始终启用。
+
 ## 文章元数据
 
-将 `.md` 文件放在文章目录或其子目录。可以直接从正文开始，也可以在文件开头用一对 `---` 包住 YAML Front Matter。`title` 省略或留空时使用不含 `.md` 的文件名。`date` 填写时使用 `YYYY-MM-DD`，省略或留空时取文件创建时间的 UTC 日期。文件创建时间不可用时，填写 `date` 即可指定。文章标题下显示创建和修改日期，修改日期取文件最后修改时间的 UTC 日期。`description` 省略或填入非文本值时按空摘要处理。
+将 `.md` 文件放在文章目录或其子目录。可以直接从正文开始，也可以在文件开头用一对 `---` 包住 YAML Front Matter。`title` 省略或留空时使用不含 `.md` 的文件名。`description` 省略或填入非文本值时按空摘要处理。
+
+`date created` 和 `date modified` 均为可选字段，按 UTC 解析，格式为 `dddd, MMMM Do YYYY, h:mm:ss a`。
+
+```yaml
+date created: Sunday, November 22nd 2026, 8:30:00 pm
+date modified: Sunday, November 22nd 2026, 9:45:00 pm
+```
+
+日期缺失、留空或无法解析时，分别使用文件创建时间和最后修改时间。文件系统未提供创建时间时，用最后修改时间补齐。时间线按创建时间降序排列；文章标题下显示创建日期和修改日期。
 
 文章 URL 使用去掉 `.md` 的文件名，例如 `hello-world.md` 对应 `/posts/hello-world`。不同子目录中的文章也须使用不同文件名。
 
-时间线右侧显示文章分类。`category` 为可选的文本字段，省略或留空时使用文章相对于 `postsDirectory` 的第一级文件夹名。直接放在文章目录下的文件归为「未分类」。
+时间线右侧显示文章分类。`category` 为可选的文本字段，省略或留空时使用文章相对于 `page.post.directory` 的第一级文件夹名。直接放在文章目录下的文件归为「未分类」。分类页将「未分类」置顶并默认选中。
 
-构建时从项目根目录的 `blog.config.json` 读取文章目录。编辑 `postsDirectory` 即可修改。默认值为 `content/posts`，相对路径以项目根目录为基准，也支持绝对路径。目录须已存在，可以为空。
+构建时从项目根目录的 `blog.config.json` 读取 `page.post.directory`。相对路径以项目根目录为基准，也支持绝对路径。目录须已存在，可以为空。
 
 ## 正文编译
 
@@ -68,8 +96,8 @@ pnpm dev
 
 文章标题下显示正文字数。统计在编译 Markdown 时完成，汉字按字计，英文和数字按词计。正文标题、列表和链接文字计入，空白、标点、代码、公式和网址不计入。
 
-`blog.config.json` 中的 `tocAutoHide` 默认为 `true`。目录收起时，短线右侧显示当前章节和全文阅读进度。鼠标移入或键盘聚焦时显示完整目录。设为 `false` 后始终显示完整目录。
+`page.post.tocAutoHide` 启用时，目录收起后在短线右侧显示当前章节和全文阅读进度。鼠标移入或键盘聚焦时显示完整目录。设为 `false` 后始终显示完整目录。
 
 `showBackToTop` 默认为 `true`，页面向下滚动达到两个视口高度时显示返回顶部按钮。设为 `false` 可关闭。
 
-在 `blog.config.json` 中用 `aboutFile` 指定 `/about` 读取的 Markdown 文件。相对路径以项目根目录为基准，也支持绝对路径。默认使用根目录的 `ABOUT.md`，文件缺失时正文留空。放在文章目录中的 About 文件会从文章扫描中排除。
+`page.about.file` 支持相对于项目根目录的路径和绝对路径，文件缺失时 About 正文留空。放在文章目录中的 About 文件会从文章扫描中排除。

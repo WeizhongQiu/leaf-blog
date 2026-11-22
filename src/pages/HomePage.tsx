@@ -1,5 +1,5 @@
 import { createSignal, onCleanup, onMount } from 'solid-js'
-import blogConfig from '@/blog.config.json'
+import { authorName, page } from '@/src/blog-config.ts'
 
 const styles = /* css */ `
 .home-page {
@@ -11,12 +11,18 @@ const styles = /* css */ `
   text-align: center;
 }
 
+.home-page h1,
+.home-page p {
+  font-family: var(--display-font);
+  font-weight: 400;
+}
+
 .home-page h1 {
   display: grid;
   margin: 0;
+  color: var(--ink);
   line-height: 1.2;
   font-size: clamp(3.25rem, 6.8vw, 5.5rem);
-  font-weight: 400;
   letter-spacing: -0.015em;
   overflow-wrap: anywhere;
 }
@@ -83,24 +89,8 @@ const styles = /* css */ `
 }
 `
 
-const { authorName, homeSubtitle } = blogConfig
-
-function timerDelay(value: unknown, fallback: number) {
-  return typeof value === 'number' && Number.isFinite(value) && value >= 0
-    ? Math.min(value, 2_147_483_647)
-    : fallback
-}
-
-const titlePause = timerDelay(
-  'homeTitlePauseMs' in blogConfig ? blogConfig.homeTitlePauseMs : undefined,
-  6500,
-)
-const typingInterval = timerDelay(
-  'homeTitleTypingIntervalMs' in blogConfig
-    ? blogConfig.homeTitleTypingIntervalMs
-    : undefined,
-  60,
-)
+const titlePause = 5000
+const typingInterval = 25
 
 const greeting = "Hi, I'm "
 const title = `${greeting}${authorName}.`
@@ -165,7 +155,7 @@ export default function HomePage() {
             <span class="home-page-caret" />
           </span>
         </h1>
-        <p>{homeSubtitle}</p>
+        <p>{page.homepage.subtitle}</p>
       </div>
     </section>
   )

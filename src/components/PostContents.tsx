@@ -7,14 +7,13 @@ import {
   onMount,
   Show,
 } from 'solid-js'
-import blogConfig from '@/blog.config.json'
+import { page } from '@/src/blog-config.ts'
 import ContentsRail from '@/src/components/ContentsRail.tsx'
 import { useSmoothFragmentScroll } from '@/src/fragment-scroll.ts'
 import type { PostHeading } from '@/src/types/post.ts'
 import '@/src/styles/post-contents.css'
 
-const autoHide =
-  !('tocAutoHide' in blogConfig) || blogConfig.tocAutoHide !== false
+const autoHide = page.post.tocAutoHide !== false
 
 export default function PostContents(props: { headings: PostHeading[] }) {
   const [active, setActive] = createSignal<PostHeading>()

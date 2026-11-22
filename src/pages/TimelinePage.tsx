@@ -1,9 +1,11 @@
+import '@fontsource-variable/noto-sans-sc'
 import { A } from '@solidjs/router'
 import { For, Show } from 'solid-js'
 import posts from 'virtual:blog/posts'
-import { authorName } from '@/blog.config.json'
+import { authorName } from '@/src/blog-config.ts'
 import ActivityHeatmap from '@/src/components/ActivityHeatmap.tsx'
 import { postPath } from '@/src/post-path.ts'
+import '@/src/styles/timeline-list.css'
 import type { PostMeta } from '@/src/types/post.ts'
 
 const styles = /* css */ `
@@ -19,6 +21,7 @@ const styles = /* css */ `
   gap: 0.55rem;
   margin: 0;
   color: var(--muted);
+  font-family: var(--display-font);
   font-size: 0.9rem;
   font-weight: 400;
 }
@@ -40,6 +43,8 @@ const styles = /* css */ `
   align-items: baseline;
   gap: 0.7rem;
   margin: 0;
+  color: var(--ink);
+  font-family: var(--display-font);
   line-height: 1.2;
   font-weight: 400;
   font-size: 2rem;
@@ -58,76 +63,22 @@ const styles = /* css */ `
   margin: 0 0 0.4rem;
   color: var(--muted);
   font-size: 0.85rem;
-}
-
-.timeline-month ul {
-  position: relative;
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  border-inline-start: 1px solid transparent;
-}
-
-.timeline-month ul::before {
-  position: absolute;
-  inset-block: 0;
-  inset-inline-start: -1px;
-  width: 1px;
-  background: var(--line);
-  content: '';
-  pointer-events: none;
-  transform-origin: top;
+  font-weight: inherit;
 }
 
 .timeline-month li[id] {
   scroll-margin-block-start: 3rem;
 }
 
-.timeline-link {
-  position: relative;
-  display: flex;
-  align-items: baseline;
-  gap: 0.8rem;
-  padding: 0.27rem 0 0.27rem 1.1rem;
-  text-decoration: none;
-}
-
-.timeline-link::before {
-  position: absolute;
-  inset-inline-start: -3px;
-  top: 50%;
-  width: 5px;
-  height: 5px;
-  border-radius: 999px;
-  background: var(--muted);
-  content: '';
-  transform: translateY(-50%);
-}
-
-.timeline-link:is(:hover, :focus-visible)::before {
-  height: 13px;
-}
-
-.timeline-link time {
-  color: var(--muted);
-  font-size: 0.88rem;
-  font-variant-numeric: tabular-nums;
+.timeline-page .timeline-link time {
   flex: 0 0 2ch;
 }
 
-.timeline-link-title,
 .timeline-link-category {
   min-width: 0;
   overflow: hidden;
   white-space: nowrap;
   text-overflow: ellipsis;
-}
-
-.timeline-link-title {
-  position: relative;
-}
-
-.timeline-link-category {
   margin-inline-start: auto;
   max-inline-size: 35%;
   flex-shrink: 0;
@@ -135,36 +86,14 @@ const styles = /* css */ `
   font-size: 0.82rem;
 }
 
-.timeline-link-title::after {
-  position: absolute;
-  inset-inline: 0;
-  inset-block-end: 0;
-  height: 1px;
-  background: currentColor;
-  content: '';
-  transform: scale(0, 0.8);
-}
-
-.timeline-link:is(:hover, :focus-visible) .timeline-link-title::after {
-  transform: scale(1, 0.8);
-}
-
 @media (prefers-reduced-motion: no-preference) {
-  .timeline-month ul::before {
+  .timeline-month .timeline-list::before {
     animation: timeline-track calc(var(--entry-duration) + var(--line-stagger))
       cubic-bezier(0.22, 1, 0.36, 1) var(--entry-delay) both;
   }
 
   .timeline-month li {
     animation: timeline-entry var(--entry-duration) ease-out var(--entry-delay) both;
-  }
-
-  .timeline-link::before {
-    transition: height 180ms ease-out;
-  }
-
-  .timeline-link-title::after {
-    transition: transform 180ms ease-out;
   }
 }
 
@@ -209,7 +138,7 @@ const monthNames = [
 
 const years = new Map<string, Year>()
 for (const [index, post] of posts.entries()) {
-  const [year, number] = post.date.split('-')
+  const [year, number] = post.createdDate.split('-', 2)
   const group = years.get(year) ?? { count: 0, months: [] }
   years.set(year, group)
   let month = group.months.at(-1)
@@ -254,42 +183,46 @@ export default function TimelinePage() {
                       {monthNames[Number(month.number) - 1] ?? month.number}
                     </h3>
                     <ul
+                      class="timeline-list"
                       style={{
                         '--entry-delay': `${entryDelay(month.firstIndex)}ms`,
                         '--line-stagger': `${entryDelay(month.firstIndex + month.posts.length - 1) - entryDelay(month.firstIndex)}ms`,
                       }}
                     >
                       <For each={month.posts}>
-                        {(post, index) => (
-                          <li
-                            id={
-                              month.posts[index() - 1]?.date === post.date
-                                ? undefined
-                                : dateTarget(post.date)
-                            }
-                            style={{
-                              '--entry-delay': `${entryDelay(month.firstIndex + index())}ms`,
-                            }}
-                          >
-                            <A
-                              href={postPath(post.fileName)}
-                              class="timeline-link"
+                        {(post, index) => {
+                          const day = post.createdDate.slice(0, 10)
+                          return (
+                            <li
+                              id={
+                                month.posts[
+                                  index() - 1
+                                ]?.createdDate.startsWith(day)
+                                  ? undefined
+                                  : dateTarget(day)
+                              }
+                              style={{
+                                '--entry-delay': `${entryDelay(month.firstIndex + index())}ms`,
+                              }}
                             >
-                              <time dateTime={post.date}>
-                                {post.date.slice(8)}
-                              </time>
-                              <span class="timeline-link-title">
-                                {post.title}
-                              </span>
-                              <span
-                                class="timeline-link-category"
-                                title={post.category}
+                              <A
+                                href={postPath(post.fileName)}
+                                class="timeline-link"
                               >
-                                # {post.category}
-                              </span>
-                            </A>
-                          </li>
-                        )}
+                                <time dateTime={day}>{day.slice(8)}</time>
+                                <span class="timeline-link-title">
+                                  {post.title}
+                                </span>
+                                <span
+                                  class="timeline-link-category"
+                                  title={post.category}
+                                >
+                                  # {post.category}
+                                </span>
+                              </A>
+                            </li>
+                          )
+                        }}
                       </For>
                     </ul>
                   </section>

@@ -12,6 +12,8 @@ const styles = /* css */ `
 }
 
 .markdown-body :is(h1, h2, h3, h4, h5, h6) {
+  color: var(--ink);
+  font-family: var(--display-font);
   font-weight: 600;
   line-height: 1.35;
   scroll-margin-top: 3rem;
@@ -19,6 +21,10 @@ const styles = /* css */ `
 
 .markdown-body :is(h1, h2) {
   font-weight: 400;
+}
+
+.markdown-body strong {
+  font-weight: 700;
 }
 
 .markdown-body > :first-child {
@@ -44,6 +50,7 @@ const styles = /* css */ `
   padding-inline-start: 1rem;
   background: transparent !important; /* Shiki sets an inline background. */
   font-size: 0.875rem;
+  font-weight: 400;
   line-height: var(--code-line-height);
 }
 

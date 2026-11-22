@@ -1,5 +1,6 @@
+import '@fontsource-variable/noto-sans-sc'
 import html from 'virtual:blog/about'
-import { authorName } from '@/blog.config.json'
+import { authorName } from '@/src/blog-config.ts'
 import MarkdownBody from '@/src/components/MarkdownBody.tsx'
 
 export default function AboutPage() {

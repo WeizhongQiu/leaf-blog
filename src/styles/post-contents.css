@@ -3,6 +3,7 @@
   top: 4rem;
   flex: 1 0 12rem;
   min-width: 0;
+  font-family: var(--display-font);
 }
 
 .contents-nav {

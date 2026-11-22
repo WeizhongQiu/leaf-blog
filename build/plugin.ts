@@ -41,7 +41,11 @@ function readAbout(file: string): string {
   }
 }
 
-export function blogContent(directory: string, aboutFile: string): Plugin {
+export function blogContent(
+  directory: string,
+  aboutFile: string,
+  showAbout: boolean,
+): Plugin {
   let index: ReturnType<typeof indexPosts> | undefined
   const getIndex = () => (index ??= indexPosts(directory, aboutFile))
   const builtPosts = new Map<string, RenderedPost>()
@@ -82,6 +86,8 @@ export function blogContent(directory: string, aboutFile: string): Plugin {
 
     async load(id) {
       if (id === resolveVirtualId(aboutModule)) {
+        if (!showAbout) return 'export default "";'
+
         // The dev watcher can track a missing About file without resolving it as an import.
         if (this.environment.mode === 'build') this.addWatchFile(aboutFile)
         const source = readAbout(aboutFile)
@@ -118,13 +124,14 @@ export function blogContent(directory: string, aboutFile: string): Plugin {
     },
 
     configureServer(server) {
-      server.watcher.add([directory, aboutFile])
+      server.watcher.add(showAbout ? [directory, aboutFile] : [directory])
     },
 
     hotUpdate({ file, timestamp }) {
       const path = relative(directory, file)
       let ids: string[]
       if (relative(aboutFile, file) === '') {
+        if (!showAbout) return []
         ids = [aboutModule]
       } else {
         if (

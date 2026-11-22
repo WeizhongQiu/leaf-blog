@@ -1,24 +1,30 @@
 import { Router, Route } from '@solidjs/router'
 import { lazy } from 'solid-js'
 import Layout from '@/src/components/Layout.tsx'
-import CategoriesPage from '@/src/pages/CategoriesPage.tsx'
 import HomePage from '@/src/pages/HomePage.tsx'
-import NotFoundPage from '@/src/pages/NotFoundPage.tsx'
-import RandomPage from '@/src/pages/RandomPage.tsx'
-import TimelinePage from '@/src/pages/TimelinePage.tsx'
 
-const AboutPage = lazy(() => import('@/src/pages/AboutPage.tsx'))
+const TimelinePage =
+  __ENABLE_TIMELINE__ && lazy(() => import('@/src/pages/TimelinePage.tsx'))
+const CategoriesPage =
+  __ENABLE_CATEGORIES__ && lazy(() => import('@/src/pages/CategoriesPage.tsx'))
+const RandomPage =
+  __ENABLE_RANDOM__ && lazy(() => import('@/src/pages/RandomPage.tsx'))
+const AboutPage =
+  __ENABLE_ABOUT__ && lazy(() => import('@/src/pages/AboutPage.tsx'))
 const PostPage = lazy(() => import('@/src/pages/PostPage.tsx'))
+const NotFoundPage = lazy(() => import('@/src/pages/NotFoundPage.tsx'))
 
 export default function App() {
   return (
     <Router root={Layout}>
       <Route path="/" component={HomePage} />
-      <Route path="/timeline" component={TimelinePage} />
-      <Route path="/categories" component={CategoriesPage} />
-      <Route path="/random" component={RandomPage} />
+      {TimelinePage && <Route path="/timeline" component={TimelinePage} />}
+      {CategoriesPage && (
+        <Route path="/categories" component={CategoriesPage} />
+      )}
+      {RandomPage && <Route path="/random" component={RandomPage} />}
       <Route path="/posts/:fileName" component={PostPage} />
-      <Route path="/about" component={AboutPage} />
+      {AboutPage && <Route path="/about" component={AboutPage} />}
       <Route path="/*all" component={NotFoundPage} />
     </Router>
   )

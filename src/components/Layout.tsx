@@ -1,17 +1,18 @@
 import { A, useBeforeLeave, useIsRouting, useLocation } from '@solidjs/router'
 import type { RouteSectionProps } from '@solidjs/router'
 import { createEffect, For, onCleanup, onMount, Show, Suspense } from 'solid-js'
-import blogConfig from '@/blog.config.json'
+import { authorName, isPageEnabled, showBackToTop } from '@/src/blog-config.ts'
 import BackToTop from '@/src/components/BackToTop.tsx'
-
-const { authorName } = blogConfig
-const showBackToTop =
-  !('showBackToTop' in blogConfig) || blogConfig.showBackToTop !== false
+import OutlineIcon, { categoryIconPath } from '@/src/components/OutlineIcon.tsx'
 
 const styles = /* css */ `
 .site-shell {
   width: min(65rem, calc(100% - 4rem));
   margin-inline: auto;
+}
+
+main.site-shell {
+  color: var(--content-color, var(--ink));
 }
 
 .site-header-inner,
@@ -22,6 +23,8 @@ const styles = /* css */ `
 }
 
 .site-header-inner {
+  font-family: var(--display-font);
+  font-weight: 400;
   justify-content: space-between;
   gap: 2rem;
   min-height: var(--header-height);
@@ -107,25 +110,29 @@ const navigation = [
   {
     label: 'TIMELINE',
     href: '/timeline',
+    show: isPageEnabled('timeline'),
     icon: 'M12 7v13M12 7C10 5 7.5 4 3 4v13c4.5 0 7 1 9 3 2-2 4.5-3 9-3V4c-4.5 0-7 1-9 3Z',
   },
   {
     label: 'CATEGORIES',
     href: '/categories',
-    icon: 'M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2Z',
+    show: isPageEnabled('categories'),
+    icon: categoryIconPath,
   },
   {
     label: 'RANDOM',
     href: '/random',
+    show: isPageEnabled('random'),
     icon: 'M7 3h10a4 4 0 0 1 4 4v10a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4V7a4 4 0 0 1 4-4Z',
     pips: 'M8 8h.01M16 8h.01M12 12h.01M8 16h.01M16 16h.01',
   },
   {
     label: 'ABOUT',
     href: '/about',
+    show: isPageEnabled('about'),
     icon: 'M12 3a4 4 0 1 0 0 8 4 4 0 0 0 0-8ZM4 21v-2a4 4 0 0 1 4-4h8a4 4 0 0 1 4 4v2',
   },
-]
+].filter(({ show }) => show !== false)
 
 export default function Layout(props: RouteSectionProps) {
   const location = useLocation()
@@ -224,20 +231,11 @@ export default function Layout(props: RouteSectionProps) {
                       : undefined
                   }
                 >
-                  <svg
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    stroke-width="1.6"
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    aria-hidden="true"
-                  >
-                    <path d={item.icon} />
+                  <OutlineIcon path={item.icon}>
                     <Show when={item.pips}>
                       <path d={item.pips} stroke-width="2.8" />
                     </Show>
-                  </svg>
+                  </OutlineIcon>
                   <span class="site-nav-label">{item.label}</span>
                 </A>
               )}

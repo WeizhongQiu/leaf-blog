@@ -1,5 +1,9 @@
 :root {
   font-family:
+    'Noto Sans SC Variable', system-ui, 'PingFang SC', 'Microsoft YaHei',
+    'Noto Sans CJK SC', sans-serif;
+  font-weight: 300;
+  --display-font:
     Georgia, 'Iowan Old Style', 'Palatino Linotype', 'Noto Serif',
     'Liberation Serif', 'Songti SC', 'Noto Serif CJK SC', 'Source Han Serif SC',
     SimSun, serif;
@@ -13,6 +17,11 @@
   --selection: #e5d8c5;
   --header-height: 5rem;
   --reading-width: 46rem;
+}
+
+:root[data-font-weight='normal'] {
+  font-weight: 400;
+  --content-color: var(--muted);
 }
 
 * {
@@ -32,6 +41,7 @@ input,
 select,
 textarea {
   font-family: inherit;
+  font-weight: inherit;
 }
 
 pre,
@@ -68,6 +78,7 @@ pre code {
 
 .page-title {
   margin: 0;
+  color: var(--ink);
   line-height: 1.2;
   font-size: 2.75rem;
   font-weight: 400;

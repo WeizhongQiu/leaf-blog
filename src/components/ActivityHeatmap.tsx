@@ -135,7 +135,8 @@ export default function ActivityHeatmap(props: {
 
   const calendar = createMemo(() => {
     const counts = new Map<string, number>()
-    for (const { date } of props.posts) {
+    for (const { createdDate } of props.posts) {
+      const date = createdDate.slice(0, 10)
       counts.set(date, (counts.get(date) ?? 0) + 1)
     }
 

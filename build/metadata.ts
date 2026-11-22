@@ -4,6 +4,12 @@ import matter from 'gray-matter'
 import type { PostMeta } from '@/src/types/post.ts'
 
 export const markdownExtension = '.md'
+const matterDatePattern =
+  /^[a-z]+,\s+([a-z]+)\s+(\d{1,2})(?:st|nd|rd|th)\s+(\d{4}),\s+(1[0-2]|0?[1-9]):(\d{2}:\d{2})\s+([ap]m)$/i
+const months =
+  'january february march april may june july august september october november december'.split(
+    ' ',
+  )
 
 interface PostFile {
   filePath: string
@@ -31,43 +37,37 @@ function text(value: unknown): string {
   return typeof value === 'string' ? value.trim() : ''
 }
 
-function resolvePostDate(
-  value: unknown,
-  birthtime: Date,
-  path: string,
-): string {
-  if (value == null || (typeof value === 'string' && !value.trim())) {
-    if (!Number.isFinite(birthtime.getTime()) || birthtime.getTime() === 0) {
-      throw contentError(
-        path,
-        'date',
-        'File creation time is unavailable. Set date in front matter.',
-      )
-    }
-    return birthtime.toISOString().slice(0, 10)
-  }
-
-  const date =
-    value instanceof Date && Number.isFinite(value.getTime())
-      ? value.toISOString().slice(0, 10)
-      : text(value)
-  if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) {
-    throw contentError(path, 'date', 'Expected a date in YYYY-MM-DD format.')
-  }
-  return date
+function twoDigits(value: string | number): string {
+  return String(value).padStart(2, '0')
 }
 
-function readFrontMatter(source: string, path: string) {
+function resolvePostDate(value: unknown, fallback: Date): string {
+  const match = matterDatePattern.exec(text(value))
+  if (!match) return fallback.toISOString()
+
+  const [, monthName, day, year, hour, minutesAndSeconds, period] = match
+  const month = months.indexOf(monthName.toLowerCase()) + 1
+  const hours = (Number(hour) % 12) + (period.toLowerCase() === 'pm' ? 12 : 0)
+  const date = new Date(
+    `${year}-${twoDigits(month)}-${twoDigits(day)}T${twoDigits(hours)}:${minutesAndSeconds}Z`,
+  )
+  return (date.getUTCDate() === Number(day) ? date : fallback).toISOString()
+}
+
+function readFrontMatter(
+  source: string,
+  path: string,
+): { fields: Record<string, unknown>; body: string } {
   // Only plain fences select YAML. Gray Matter also supports named engines.
   const opening = /^\uFEFF?---[ \t]*\r?\n/.exec(source)
   if (!opening || !/^---[ \t]*\r?$/m.test(source.slice(opening[0].length))) {
     return { fields: {}, body: source }
   }
 
-  let parsed: ReturnType<typeof matter>
   try {
     // Passing options disables Gray Matter's cache of whole articles.
-    parsed = matter(source, { language: 'yaml' })
+    const { data, content } = matter(source, { language: 'yaml' })
+    return { fields: data ?? {}, body: content }
   } catch (cause) {
     const reason = cause instanceof Error ? cause.message : String(cause)
     throw contentError(
@@ -77,17 +77,6 @@ function readFrontMatter(source: string, path: string) {
       cause,
     )
   }
-
-  const data: unknown = parsed.data
-  if (
-    typeof data !== 'object' ||
-    data === null ||
-    Object.getPrototypeOf(data) !== Object.prototype
-  ) {
-    throw contentError(path, 'Front Matter', 'Expected a YAML mapping.')
-  }
-
-  return { fields: data as Record<string, unknown>, body: parsed.content }
 }
 
 export function readPost({ filePath, relativePath }: PostFile): {
@@ -114,8 +103,11 @@ export function readPost({ filePath, relativePath }: PostFile): {
   return {
     meta: {
       title: text(fields.title) || fileName,
-      date: resolvePostDate(fields.date, times.birthtime, relativePath),
-      modifiedDate: times.mtime.toISOString().slice(0, 10),
+      createdDate: resolvePostDate(
+        fields['date created'],
+        times.birthtimeMs ? times.birthtime : times.mtime,
+      ),
+      modifiedDate: resolvePostDate(fields['date modified'], times.mtime),
       fileName,
       description: text(fields.description),
       category: text(fields.category) || (nested ? firstFolder : '未分类'),
@@ -175,7 +167,9 @@ export function scanPosts(directory: string, aboutFile: string): PostSource[] {
   })
 
   return posts.sort(({ meta: left }, { meta: right }) => {
-    if (left.date !== right.date) return left.date > right.date ? -1 : 1
+    if (left.createdDate !== right.createdDate) {
+      return left.createdDate > right.createdDate ? -1 : 1
+    }
     if (left.fileName === right.fileName) return 0
     return left.fileName < right.fileName ? -1 : 1
   })

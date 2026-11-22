@@ -1,10 +1,27 @@
 {
-  "postsDirectory": "posts",
-  "aboutFile": "ABOUT.md",
-  "authorName": "Weichong Chiu",
-  "homeSubtitle": "A front-end developer and a blogger.",
-  "homeTitleTypingIntervalMs": 25,
-  "homeTitlePauseMs": 5000,
-  "tocAutoHide": true,
-  "showBackToTop": false
+  "authorName": "SuperNailoong",
+  "showBackToTop": false,
+  "fontWeight": "normal",
+  "page": {
+    "homepage": {
+      "subtitle": "The limits of my language mean the limits of my world."
+    },
+    "post": {
+      "directory": "posts",
+      "tocAutoHide": true
+    },
+    "timeline": {
+      "show": true
+    },
+    "categories": {
+      "show": true
+    },
+    "random": {
+      "show": true
+    },
+    "about": {
+      "show": true,
+      "file": "ABOUT.md"
+    }
+  }
 }

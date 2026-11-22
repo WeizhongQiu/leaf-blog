@@ -1,6 +1,6 @@
 export interface PostMeta {
   title: string
-  date: string
+  createdDate: string
   modifiedDate: string
   /** Markdown file name without the .md extension. */
   fileName: string

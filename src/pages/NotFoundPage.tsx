@@ -1,5 +1,6 @@
+import '@fontsource-variable/noto-sans-sc'
 import { A } from '@solidjs/router'
-import { authorName } from '@/blog.config.json'
+import { authorName } from '@/src/blog-config.ts'
 
 export default function NotFoundPage() {
   document.title = `页面未找到 | ${authorName}`
