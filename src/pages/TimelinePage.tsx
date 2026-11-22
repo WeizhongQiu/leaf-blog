@@ -532,11 +532,7 @@ export default function TimelinePage() {
         <Show when={years.length} fallback={<p class="muted">暂无文章。</p>}>
           <For each={view().years}>
             {(year) => (
-              <section
-                class="timeline-year"
-                data-year={year.number}
-                data-folded={view().months.has(year) ? undefined : ''}
-              >
+              <section>
                 <h2
                   class="timeline-year-heading"
                   data-timeline-motion={yearKey(year)}
@@ -559,83 +555,73 @@ export default function TimelinePage() {
                 </h2>
                 <Show when={view().months.get(year)}>
                   {(yearMonths) => (
-                    <div class="timeline-months">
-                      <For each={yearMonths()}>
-                        {(month) => (
-                          <section
-                            class="timeline-month"
-                            data-month={month.number}
+                    <For each={yearMonths()}>
+                      {(month) => (
+                        <section class="timeline-month">
+                          <h3
+                            class="timeline-month-heading"
+                            data-timeline-motion={monthKey(month)}
                             data-folded={
                               view().posts.has(month) ? undefined : ''
                             }
                           >
-                            <h3
-                              class="timeline-month-heading"
-                              data-timeline-motion={monthKey(month)}
-                              data-folded={
-                                view().posts.has(month) ? undefined : ''
+                            <a
+                              class="timeline-heading-link"
+                              href={`#${monthKey(month)}`}
+                              target="_self"
+                              aria-label={`${year.number} 年 ${month.number} 月`}
+                              aria-current={
+                                months[cursor().month] === month
+                                  ? 'location'
+                                  : undefined
                               }
+                              onClick={(event) => jump(event, monthKey(month))}
                             >
-                              <a
-                                class="timeline-heading-link"
-                                href={`#${monthKey(month)}`}
-                                target="_self"
-                                aria-label={`${year.number} 年 ${month.number} 月`}
-                                aria-current={
-                                  months[cursor().month] === month
-                                    ? 'location'
-                                    : undefined
-                                }
-                                onClick={(event) =>
-                                  jump(event, monthKey(month))
-                                }
-                              >
-                                {monthLabel(month)}
-                              </a>
-                            </h3>
-                            <Show when={view().posts.get(month)}>
-                              {(articles) => (
-                                <ul class="timeline-list">
-                                  <For each={articles()}>
-                                    {(post) => {
-                                      const day = post.createdDate.slice(0, 10)
-                                      return (
-                                        <li
-                                          class="timeline-article"
-                                          data-timeline-motion={`post:${post.fileName}`}
-                                          style={{
-                                            '--entry-delay':
-                                              introDelays().get(post),
-                                          }}
+                              {monthLabel(month)}
+                            </a>
+                          </h3>
+                          <Show when={view().posts.get(month)}>
+                            {(articles) => (
+                              <ul class="timeline-list">
+                                <For each={articles()}>
+                                  {(post) => {
+                                    const day = post.createdDate.slice(0, 10)
+                                    return (
+                                      <li
+                                        class="timeline-article"
+                                        data-timeline-motion={`post:${post.fileName}`}
+                                        style={{
+                                          '--entry-delay':
+                                            introDelays().get(post),
+                                        }}
+                                      >
+                                        <A
+                                          href={postPath(post.fileName)}
+                                          class="timeline-link"
                                         >
-                                          <A
-                                            href={postPath(post.fileName)}
-                                            class="timeline-link"
+                                          <time dateTime={day}>
+                                            {day.slice(8)}
+                                          </time>
+                                          <span class="timeline-link-title">
+                                            {post.title}
+                                          </span>
+                                          <span
+                                            class="timeline-link-category"
+                                            title={post.category}
                                           >
-                                            <time dateTime={day}>
-                                              {day.slice(8)}
-                                            </time>
-                                            <span class="timeline-link-title">
-                                              {post.title}
-                                            </span>
-                                            <span
-                                              class="timeline-link-category"
-                                              title={post.category}
-                                            >
-                                              # {post.category}
-                                            </span>
-                                          </A>
-                                        </li>
-                                      )
-                                    }}
-                                  </For>
-                                </ul>
-                              )}
-                            </Show>
-                          </section>
-                        )}
-                      </For>
-                    </div>
+                                            # {post.category}
+                                          </span>
+                                        </A>
+                                      </li>
+                                    )
+                                  }}
+                                </For>
+                              </ul>
+                            )}
+                          </Show>
+                        </section>
+                      )}
+                    </For>
                   )}
                 </Show>
               </section>

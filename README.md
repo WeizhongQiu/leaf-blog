@@ -1,6 +1,12 @@
+<p align="center">
+  <img src="public/favicon.svg" alt="Leaf Blog 的墨叶图标" width="72" height="72" />
+</p>
+
 # Leaf Blog
 
 使用 Solid、TypeScript 和 Vite 的 Markdown 博客。提供首页、时间线、分类、文章页、随机文章和 About 页面。
+
+标签页使用墨叶图标，浅色模式为暖棕色，深色模式为米色。
 
 ## 环境与运行
 
@@ -12,7 +18,16 @@ pnpm install --frozen-lockfile
 pnpm dev
 ```
 
-打开终端输出的本地地址。直接访问 `/missing` 可以验证未找到页面，再点击“返回首页”验证应用内导航；刷新及浏览器前进后退也应正常。
+打开终端输出的本地地址。默认将文章放在 `posts/`，也可以在 `blog.config.json` 中指定其他目录。
+
+## 部署
+
+```bash
+pnpm build
+pnpm preview
+```
+
+将 `dist/` 部署到站点根路径。静态服务器应优先返回存在的文件，将其他页面请求回退到 `index.html`，这样直接访问或刷新 `/posts/hello-world` 等页面时也能正常打开。文章或配置有更新时，重新构建并部署。
 
 ## 命令
 
@@ -35,7 +50,7 @@ pnpm dev
 - `src/styles/base.css`：全站共用的颜色、字体、基础规则和页面标题样式。
 - `src/styles/post-contents.css`：由 `PostContents.tsx` 导入的文章目录样式。
 - `src/types/post.ts`：文章元数据、渲染结果和加载器类型。
-- `build/metadata.ts`：扫描和校验文章元数据。
+- `build/metadata.ts`：读取文章和 Front Matter，生成元数据。
 - `build/markdown.ts`：编译 Markdown、代码高亮和公式。
 - `build/plugin.ts`：提供 Vite 文章和 About 模块，以及 Markdown 文件变更后的开发刷新。
 - `blog.config.json`：管理全局与页面配置。
@@ -46,7 +61,7 @@ pnpm dev
 
 新增页面时，直接在 `src/pages/` 添加 TSX 文件，把专用样式写进组件。样式较长时，可以放到 `src/styles/` 并由对应组件导入。在 `src/App.tsx` 注册路由，并按需在 `src/components/Layout.tsx` 增加导航。组件式路由使用与 Solid 1.x 兼容的 `@solidjs/router` 0.15。
 
-模板图片、图标、计数器及演示样式已移除。TypeScript 固定为 6.0.3，以匹配当前 `typescript-eslint` 支持范围。依赖版本由 `pnpm-lock.yaml` 锁定。
+TypeScript 固定为 6.0.3，以匹配项目中的 `typescript-eslint` 版本。依赖版本由 `pnpm-lock.yaml` 锁定。
 
 ## 博客配置
 
@@ -71,7 +86,7 @@ pnpm dev
 
 ## 文章元数据
 
-将 `.md` 文件放在文章目录或其子目录。可以直接从正文开始，也可以在文件开头用一对 `---` 包住 YAML Front Matter。`title` 省略或留空时使用不含 `.md` 的文件名。`description` 省略或填入非文本值时按空摘要处理。
+将 `.md` 文件放在文章目录或其子目录。可以直接从正文开始，也可以在文件开头用一对 `---` 包住 YAML Front Matter。`title` 省略或留空时使用不含 `.md` 的文件名。
 
 `date created` 和 `date modified` 均为可选字段，按 UTC 解析，格式为 `dddd, MMMM Do YYYY, h:mm:ss a`。
 
@@ -103,3 +118,9 @@ date modified: Sunday, November 22nd 2026, 9:45:00 pm
 `showBackToTop` 默认为 `true`，页面向下滚动达到两个视口高度时显示返回顶部按钮。设为 `false` 可关闭。
 
 `page.about.file` 支持相对于项目根目录的路径和绝对路径，文件缺失时 About 正文留空。放在文章目录中的 About 文件会从文章扫描中排除。
+
+## 未来计划
+
+- [ ] 性能优化
+- [ ] 正文样式美化
+- [ ] 新增 `pagefinder` 搜索模块

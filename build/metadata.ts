@@ -18,6 +18,7 @@ interface PostFile {
 
 export interface PostSource extends PostFile {
   meta: PostMeta
+  body: string
 }
 
 export function postFileName(path: string): string {
@@ -79,10 +80,7 @@ function readFrontMatter(
   }
 }
 
-export function readPost({ filePath, relativePath }: PostFile): {
-  meta: PostMeta
-  body: string
-} {
+function readPost({ filePath, relativePath }: PostFile): PostSource {
   let source: string
   let times: Stats
   try {
@@ -101,6 +99,8 @@ export function readPost({ filePath, relativePath }: PostFile): {
   const fileName = postFileName(relativePath)
   const [firstFolder, nested] = relativePath.split('/', 2)
   return {
+    filePath,
+    relativePath,
     meta: {
       title: text(fields.title) || fileName,
       createdDate: resolvePostDate(
@@ -109,7 +109,6 @@ export function readPost({ filePath, relativePath }: PostFile): {
       ),
       modifiedDate: resolvePostDate(fields['date modified'], times.mtime),
       fileName,
-      description: text(fields.description),
       category: text(fields.category) || (nested ? firstFolder : '未分类'),
     },
     body,
@@ -162,8 +161,7 @@ export function scanPosts(directory: string, aboutFile: string): PostSource[] {
     }
 
     pathsByFileName.set(fileName, path)
-    const file = { filePath: join(directory, path), relativePath: path }
-    return { ...file, meta: readPost(file).meta }
+    return readPost({ filePath: join(directory, path), relativePath: path })
   })
 
   return posts.sort(({ meta: left }, { meta: right }) => {

@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
+  <title>墨叶</title>
+  <style>
+    @media (prefers-color-scheme: dark) {
+      .leaf { fill: #e6cfab; }
+    }
+  </style>
+  <path
+    class="leaf"
+    fill="#795a38"
+    fill-rule="evenodd"
+    d="M28.4 3.4C29.5 13.4 24.6 23.6 15.7 25.2c-2.6.5-5 .1-6.8-1.1L5.5 28a1.5 1.5 0 0 1-2.3-1.9l3.7-4.4C4.3 18 5.1 12.4 9.5 8.9c4.9-3.8 11-2.6 18.9-5.5ZM10 20.6c2.7-5 7.4-8.8 13.6-11.8-3.5 3.7-7.4 7.3-11.1 13.2-.9 1.5-3.4.2-2.5-1.4Z"
+  />
+</svg>

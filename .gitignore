@@ -9,7 +9,8 @@ coverage/
 # Local blog content
 /content/
 /post/
-/posts/
+/posts/*
+!/posts/.gitkeep
 ABOUT.md
 
 # Local environment

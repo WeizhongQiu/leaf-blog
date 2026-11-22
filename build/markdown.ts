@@ -4,7 +4,7 @@ import { renderToString } from 'katex'
 import MarkdownIt from 'markdown-it'
 import { createHighlighter } from 'shiki'
 import type { RenderedPost } from '@/src/types/post.ts'
-import { readPost, type PostSource } from './metadata.ts'
+import type { PostSource } from './metadata.ts'
 
 const theme = 'github-light'
 const plainTextLanguages = new Set(['text', 'txt', 'plain', 'plaintext'])
@@ -189,11 +189,10 @@ export async function renderMarkdown(
 }
 
 export async function renderPost(
-  post: PostSource,
+  { meta, body, relativePath }: PostSource,
   warn: (message: string) => void,
 ): Promise<RenderedPost> {
-  const { meta, body } = readPost(post)
   const details: ArticleDetails = { headings: [], wordCount: 0 }
-  const html = await renderMarkdown(body, post.relativePath, warn, details)
+  const html = await renderMarkdown(body, relativePath, warn, details)
   return { meta, html, ...details }
 }
