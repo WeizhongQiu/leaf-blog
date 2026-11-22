@@ -1,6 +1,6 @@
 .post-contents {
   position: sticky;
-  top: 4rem;
+  top: calc(4rem + var(--sticky-header-offset, 0px));
   flex: 1 0 12rem;
   min-width: 0;
   font-family: var(--display-font);
@@ -11,18 +11,16 @@
   --contents-transition-duration: 340ms;
   --row-height: 1.75rem;
   --rail-width: 2.125rem;
-  --contents-viewport: max(0px, calc(100dvh - 8rem));
+  --contents-viewport: max(
+    0px,
+    calc(100dvh - 8rem - var(--sticky-header-offset, 0px))
+  );
   --contents-padding: 0.3rem;
   max-height: var(--contents-viewport);
   overflow: auto;
   padding: var(--contents-padding);
-  scrollbar-width: thin;
-  scrollbar-color: transparent transparent;
+  scrollbar-width: none;
   overscroll-behavior: contain;
-}
-
-.contents-nav:is([data-auto-hide='false'], :hover, :has(:focus-visible)) {
-  scrollbar-color: var(--line) transparent;
 }
 
 .contents-nav[data-auto-hide='true']:is(:hover, :has(:focus-visible)) {

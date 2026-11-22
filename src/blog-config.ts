@@ -6,6 +6,7 @@ interface PageVisibility {
 
 interface BlogConfig {
   authorName: string
+  stickyHeader?: boolean
   showBackToTop?: boolean
   fontWeight?: string
   page: {
@@ -19,7 +20,12 @@ interface BlogConfig {
 }
 
 const settings: BlogConfig = config
-export const { authorName, page, showBackToTop = true } = settings
+export const {
+  authorName,
+  page,
+  showBackToTop = true,
+  stickyHeader = false,
+} = settings
 export const fontWeight = settings.fontWeight === 'normal' ? 'normal' : 'light'
 
 export function isPageEnabled(

@@ -10,11 +10,6 @@ declare module 'virtual:blog/loaders' {
   export default loaders
 }
 
-declare module 'virtual:blog/post/*.md?blog' {
-  const post: import('@/src/types/post.ts').RenderedPost
-  export default post
-}
-
 declare module 'virtual:blog/about' {
   const html: string
   export default html

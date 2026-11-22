@@ -1,6 +1,5 @@
 import { createMemo, createSignal, For, Show } from 'solid-js'
 import { Portal } from 'solid-js/web'
-import { useSmoothFragmentScroll } from '@/src/fragment-scroll.ts'
 import type { PostMeta } from '@/src/types/post.ts'
 
 const styles = /* css */ `
@@ -10,11 +9,12 @@ const styles = /* css */ `
 
 .activity-scroll {
   overflow-x: auto;
-  padding-block-end: 0.2rem;
+  padding-block-end: max(2px, 0.2rem);
 }
 
 .activity-calendar {
   min-width: 36rem;
+  padding-inline: 2px;
   --activity-gap: 3px;
 }
 
@@ -51,7 +51,7 @@ const styles = /* css */ `
 .activity-day[data-level='3'] { background: #ae774e; }
 .activity-day[data-level='4'] { background: #8a532c; }
 
-.activity-grid a.activity-day:hover {
+.activity-grid a.activity-day:focus-visible {
   outline: 1px solid var(--muted);
   outline-offset: 1px;
 }
@@ -99,13 +99,13 @@ function formatDay(dayOfMonth: number) {
 export default function ActivityHeatmap(props: {
   posts: PostMeta[]
   hrefForDate: (date: string) => string
+  onDateClick: (date: string, event: MouseEvent) => void
 }) {
   const [tooltip, setTooltip] = createSignal<{
     label: string
     x: number
     y: number
   }>()
-  const smoothScroll = useSmoothFragmentScroll()
 
   const showAtPointer = (event: PointerEvent) => {
     if (event.pointerType === 'touch') return
@@ -219,7 +219,7 @@ export default function ActivityHeatmap(props: {
                         target="_self"
                         onClick={(event) => {
                           setTooltip(undefined)
-                          smoothScroll(event)
+                          props.onDateClick(entry.key, event)
                         }}
                       />
                     ) : (

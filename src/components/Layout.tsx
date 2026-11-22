@@ -1,7 +1,12 @@
 import { A, useBeforeLeave, useIsRouting, useLocation } from '@solidjs/router'
 import type { RouteSectionProps } from '@solidjs/router'
 import { createEffect, For, onCleanup, onMount, Show, Suspense } from 'solid-js'
-import { authorName, isPageEnabled, showBackToTop } from '@/src/blog-config.ts'
+import {
+  authorName,
+  isPageEnabled,
+  showBackToTop,
+  stickyHeader,
+} from '@/src/blog-config.ts'
 import BackToTop from '@/src/components/BackToTop.tsx'
 import OutlineIcon, { categoryIconPath } from '@/src/components/OutlineIcon.tsx'
 
@@ -13,6 +18,30 @@ const styles = /* css */ `
 
 main.site-shell {
   color: var(--content-color, var(--ink));
+}
+
+#root:has(> main > .viewport-page) {
+  display: flex;
+  flex-direction: column;
+  block-size: 100dvh;
+  overflow: clip;
+}
+
+#root:has(> main > .viewport-page) > main {
+  flex: 1;
+  min-block-size: 0;
+}
+
+:root:has(.site-header-sticky) {
+  --sticky-header-offset: var(--sticky-header-height, var(--header-height));
+  scroll-padding-block-start: var(--sticky-header-offset);
+}
+
+.site-header-sticky {
+  position: sticky;
+  inset-block-start: 0;
+  z-index: 4;
+  background: var(--paper);
 }
 
 .site-header-inner,
@@ -137,6 +166,7 @@ const navigation = [
 export default function Layout(props: RouteSectionProps) {
   const location = useLocation()
   const isRouting = useIsRouting()
+  let header!: HTMLElement
   let main!: HTMLElement
   let motion: MediaQueryList | undefined
   let animation: Animation | undefined
@@ -176,6 +206,22 @@ export default function Layout(props: RouteSectionProps) {
   })
 
   onMount(() => {
+    if (stickyHeader) {
+      const rootStyle = document.documentElement.style
+      const measureHeader = () =>
+        rootStyle.setProperty(
+          '--sticky-header-height',
+          `${header.getBoundingClientRect().height}px`,
+        )
+      measureHeader()
+      const observer = new ResizeObserver(measureHeader)
+      observer.observe(header)
+      onCleanup(() => {
+        observer.disconnect()
+        rootStyle.removeProperty('--sticky-header-height')
+      })
+    }
+
     const preference = window.matchMedia('(prefers-reduced-motion: reduce)')
     motion = preference
     let previousPath: string | undefined
@@ -213,7 +259,7 @@ export default function Layout(props: RouteSectionProps) {
   return (
     <>
       <style>{styles}</style>
-      <header>
+      <header ref={header} classList={{ 'site-header-sticky': stickyHeader }}>
         <div class="site-shell site-header-inner">
           <A href="/" end class="site-name">
             {authorName}

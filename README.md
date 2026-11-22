@@ -50,7 +50,9 @@ pnpm dev
 
 ## 博客配置
 
-`blog.config.json` 根级设置包括 `authorName`、`showBackToTop` 和 `fontWeight`。顶栏显示作者名，首页标题使用 `Hi, I'm {authorName}.`。打字间隔固定为 25 毫秒，打完后停留 5 秒。
+`blog.config.json` 根级设置包括 `authorName`、`stickyHeader`、`showBackToTop` 和 `fontWeight`。顶栏显示作者名，首页标题使用 `Hi, I'm {authorName}.`。打字间隔固定为 25 毫秒，打完后停留 5 秒。
+
+`stickyHeader` 默认为 `false`。设为 `true` 后，顶栏在页面滚动时固定在顶部。
 
 `fontWeight` 控制正文和列表的 Noto Sans SC 字重，`light` 为 300（默认值），`normal` 为 400。首页标题、副标题、顶栏和已有衬线标题沿用原字体。
 

@@ -16,18 +16,6 @@ import '@/src/styles/timeline-list.css'
 import type { PostMeta } from '@/src/types/post.ts'
 
 const styles = /* css */ `
-#root:has(> main > .categories-page) {
-  display: flex;
-  flex-direction: column;
-  block-size: 100dvh;
-  overflow: clip;
-}
-
-#root:has(> main > .categories-page) > main {
-  flex: 1;
-  min-block-size: 0;
-}
-
 .categories-page {
   --category-entry-duration: 240ms;
   display: flex;
@@ -44,6 +32,7 @@ const styles = /* css */ `
 }
 
 .categories-summary {
+  flex-shrink: 0;
   margin-block-end: calc(1.95rem + 1px);
 }
 
@@ -144,12 +133,19 @@ const styles = /* css */ `
 }
 
 .categories-results {
+  display: flex;
   flex: 1;
+  flex-direction: column;
   min-inline-size: 0;
+}
+
+.categories-scroll {
+  flex: 1;
+  min-block-size: 0;
   overflow: auto;
   overscroll-behavior: contain;
   padding-block-end: 2rem;
-  scrollbar-width: thin;
+  scrollbar-width: none;
 }
 
 .categories-results .timeline-list {
@@ -183,14 +179,14 @@ const styles = /* css */ `
   .categories-buttons button,
   .categories-select,
   .categories-results .timeline-list li {
-    animation: category-entry var(--category-entry-duration) ease-out
+    animation: category-entry var(--category-entry-duration) linear
       var(--category-entry-delay, 0ms) both;
   }
 
   .categories-results .timeline-list::before {
     animation: category-track
       calc(var(--category-entry-duration) + var(--category-stagger))
-      cubic-bezier(0.22, 1, 0.36, 1) both;
+      linear both;
   }
 }
 
@@ -222,7 +218,8 @@ for (const post of posts) {
 }
 
 const categoryEntries = [...categories]
-const categoryEntryDelay = (index: number) => `${Math.min(32 * index, 360)}ms`
+const categoryEntryDelay = (index: number, count: number) =>
+  `${index * Math.min(32, 360 / Math.max(1, count - 1))}ms`
 
 export default function CategoriesPage() {
   document.title = `分类 | ${authorName}`
@@ -232,7 +229,7 @@ export default function CategoriesPage() {
   const selectedPosts = () => categories.get(selected())
   let options!: HTMLDivElement
   let buttons!: HTMLDivElement
-  let results!: HTMLElement
+  let timeline!: HTMLDivElement
 
   onMount(() => {
     function updateButtons() {
@@ -259,11 +256,11 @@ export default function CategoriesPage() {
   function selectCategory(category: string) {
     if (category === selected()) return
     setSelected(category)
-    results.scrollTop = 0
+    timeline.scrollTop = 0
   }
 
   return (
-    <section class="categories-page" aria-label="分类选集">
+    <section class="viewport-page categories-page" aria-label="分类选集">
       <style>{styles}</style>
       <aside class="categories-sidebar">
         <div ref={options} class="categories-options">
@@ -280,7 +277,10 @@ export default function CategoriesPage() {
                   type="button"
                   aria-pressed={category === selected()}
                   style={{
-                    '--category-entry-delay': categoryEntryDelay(index()),
+                    '--category-entry-delay': categoryEntryDelay(
+                      index(),
+                      categoryEntries.length,
+                    ),
                   }}
                   onClick={() => selectCategory(category)}
                 >
@@ -307,21 +307,22 @@ export default function CategoriesPage() {
           </Show>
         </div>
       </aside>
-      <section
-        ref={results}
-        class="categories-results"
-        aria-label="分类文章"
-        tabIndex={0}
-      >
-        <Show keyed when={selectedPosts()}>
-          {(articles) => (
-            <>
-              <header class="categories-summary">
-                <h1>
-                  <strong>{articles.length}</strong> 篇文章
-                </h1>
-                <p># {selected()}</p>
-              </header>
+      <section class="categories-results" aria-label="分类文章">
+        <header class="categories-summary">
+          <h1>
+            <strong>{selectedPosts()?.length ?? 0}</strong> 篇文章
+          </h1>
+          <p># {selected()}</p>
+        </header>
+        <div
+          ref={timeline}
+          class="categories-scroll"
+          role="region"
+          aria-label="文章时间线"
+          tabIndex={0}
+        >
+          <Show keyed when={selectedPosts()}>
+            {(articles) => (
               <Show
                 when={articles.length}
                 fallback={<p class="muted">暂无文章。</p>}
@@ -331,6 +332,7 @@ export default function CategoriesPage() {
                   style={{
                     '--category-stagger': categoryEntryDelay(
                       articles.length - 1,
+                      articles.length,
                     ),
                   }}
                 >
@@ -343,8 +345,10 @@ export default function CategoriesPage() {
                       return (
                         <li
                           style={{
-                            '--category-entry-delay':
-                              categoryEntryDelay(index()),
+                            '--category-entry-delay': categoryEntryDelay(
+                              index(),
+                              articles.length,
+                            ),
                           }}
                         >
                           <A
@@ -365,9 +369,9 @@ export default function CategoriesPage() {
                   </For>
                 </ul>
               </Show>
-            </>
-          )}
-        </Show>
+            )}
+          </Show>
+        </div>
       </section>
     </section>
   )

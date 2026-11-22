@@ -6,6 +6,7 @@ import { isPageEnabled, page } from './src/blog-config.ts'
 
 const { directory } = page.post
 const aboutFile = page.about?.file
+const showAbout = isPageEnabled('about')
 if (typeof directory !== 'string' || !directory.trim()) {
   throw new Error(
     'blog.config.json: "page.post.directory" must be a non-empty path.',
@@ -17,7 +18,7 @@ export default defineConfig({
     __ENABLE_TIMELINE__: isPageEnabled('timeline'),
     __ENABLE_CATEGORIES__: isPageEnabled('categories'),
     __ENABLE_RANDOM__: isPageEnabled('random'),
-    __ENABLE_ABOUT__: isPageEnabled('about'),
+    __ENABLE_ABOUT__: showAbout,
   },
   resolve: { tsconfigPaths: true },
   plugins: [
@@ -40,7 +41,7 @@ export default defineConfig({
         import.meta.dirname,
         (typeof aboutFile === 'string' && aboutFile.trim()) || 'ABOUT.md',
       ),
-      isPageEnabled('about'),
+      showAbout,
     ),
   ],
 })

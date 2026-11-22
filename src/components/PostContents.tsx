@@ -67,8 +67,15 @@ export default function PostContents(props: { headings: PostHeading[] }) {
     hashHeading()?.heading.scrollIntoView()
 
     let frame = 0
-    const readAnchorOffset = () =>
-      parseFloat(getComputedStyle(sections[0].heading).scrollMarginTop) + 1
+    const readAnchorOffset = () => {
+      const margin = parseFloat(
+        getComputedStyle(sections[0].heading).scrollMarginTop,
+      )
+      const padding = parseFloat(
+        getComputedStyle(document.documentElement).scrollPaddingTop,
+      )
+      return margin + (padding || 0) + 1
+    }
     let readingLine = readAnchorOffset()
     const update = () => {
       frame = 0
@@ -177,9 +184,7 @@ export default function PostContents(props: { headings: PostHeading[] }) {
                     aria-current={active()?.id === id ? 'location' : undefined}
                     style={{ '--depth': Math.min(3, level - shallowest()) }}
                   >
-                    <span class="contents-label" title={title}>
-                      {title}
-                    </span>
+                    <span class="contents-label">{title}</span>
                   </a>
                 </li>
               )}
