@@ -1,30 +1,10 @@
 import { createSignal, onCleanup, onMount } from 'solid-js'
 import { authorName, page } from '@/src/blog-config.ts'
+import '@/src/styles/page-intro.css'
 
 const styles = /* css */ `
-.home-page {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  min-height: calc(100svh - var(--header-height));
-  padding-block: 4rem 9rem;
-  text-align: center;
-}
-
-.home-page h1,
-.home-page p {
-  font-family: var(--display-font);
-  font-weight: 400;
-}
-
 .home-page h1 {
   display: grid;
-  margin: 0;
-  color: var(--ink);
-  line-height: 1.2;
-  font-size: clamp(3.25rem, 6.8vw, 5.5rem);
-  letter-spacing: -0.015em;
-  overflow-wrap: anywhere;
 }
 
 .home-page h1::before,
@@ -80,13 +60,6 @@ const styles = /* css */ `
     display: none;
   }
 }
-
-.home-page p {
-  margin: 1.4rem 0 0;
-  color: var(--muted);
-  font-size: 1.05rem;
-  letter-spacing: 0.02em;
-}
 `
 
 const titlePause = 5000
@@ -140,10 +113,10 @@ export default function HomePage() {
   })
 
   return (
-    <section class="home-page">
+    <section class="page-intro home-page">
       <style>{styles}</style>
       <div>
-        <h1 aria-label={title}>
+        <h1 class="page-intro-title" aria-label={title}>
           <span class="home-page-typed" aria-hidden="true">
             {greeting.slice(0, typed())}
             <span class="home-page-name">
@@ -155,7 +128,7 @@ export default function HomePage() {
             <span class="home-page-caret" />
           </span>
         </h1>
-        <p>{page.homepage.subtitle}</p>
+        <p class="page-intro-subtitle">{page.homepage.subtitle}</p>
       </div>
     </section>
   )

@@ -69,20 +69,26 @@ TypeScript 固定为 6.0.3，以匹配项目中的 `typescript-eslint` 版本。
 
 `stickyHeader` 默认为 `false`。设为 `true` 后，顶栏在页面滚动时固定在顶部。
 
+`githubUrl` 设置顶栏 GITHUB 入口的链接。留空或省略时隐藏该入口。
+
 `fontWeight` 控制正文和列表的 Noto Sans SC 字重，`light` 为 300（默认值），`normal` 为 400。首页标题、副标题、顶栏和已有衬线标题沿用原字体。
 
-| 配置项                   | 用途                                                |
-| ------------------------ | --------------------------------------------------- |
-| `page.homepage.subtitle` | 首页副标题                                          |
-| `page.post.directory`    | 文章目录                                            |
-| `page.post.tocAutoHide`  | 文章目录是否自动收起，默认为 `true`                 |
-| `page.about.file`        | About 页的 Markdown 文件，默认为根目录的 `ABOUT.md` |
-| `page.timeline.show`     | 是否启用时间线                                      |
-| `page.categories.show`   | 是否启用分类页                                      |
-| `page.random.show`       | 是否启用随机文章                                    |
-| `page.about.show`        | 是否启用 About                                      |
+| 配置项                       | 用途                                                |
+| ---------------------------- | --------------------------------------------------- |
+| `page.homepage.subtitle`     | 首页副标题                                          |
+| `page.post.directory`        | 文章目录                                            |
+| `page.post.tocAutoHide`      | 文章目录是否自动收起，默认为 `true`                 |
+| `page.about.file`            | About 页的 Markdown 文件，默认为根目录的 `ABOUT.md` |
+| `page.timeline.show`         | 是否启用时间线                                      |
+| `page.categories.show`       | 是否启用分类页                                      |
+| `page.random.show`           | 是否启用随机文章                                    |
+| `page.about.show`            | 是否启用 About                                      |
+| `page.notfound.message`      | 缺失页正中的一句话                                  |
+| `page.notfound.autoRedirect` | 是否在 3 秒后自动回到首页，默认为 `false`           |
 
 可选页面的 `show` 默认为 `true`。设为 `false` 后，构建跳过该页面模块，路由和顶栏入口关闭。直接访问该地址会显示未找到页面。首页与文章页始终启用。
+
+文章目录为空时，随机入口转到 `/missing`。点击缺失页中间的文字也可以返回首页。
 
 ## 文章元数据
 

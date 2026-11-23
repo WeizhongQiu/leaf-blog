@@ -3,6 +3,7 @@ import type { RouteSectionProps } from '@solidjs/router'
 import { createEffect, For, onCleanup, onMount, Show, Suspense } from 'solid-js'
 import {
   authorName,
+  githubUrl,
   isPageEnabled,
   showBackToTop,
   stickyHeader,
@@ -69,7 +70,9 @@ main.site-shell {
 }
 
 .site-nav {
-  gap: 1.75rem;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 0.25rem 1.75rem;
 }
 
 .site-nav-link {
@@ -162,6 +165,9 @@ const navigation = [
     icon: 'M12 3a4 4 0 1 0 0 8 4 4 0 0 0 0-8ZM4 21v-2a4 4 0 0 1 4-4h8a4 4 0 0 1 4 4v2',
   },
 ].filter(({ show }) => show !== false)
+
+const githubIconPath =
+  'M9 21v-3c0-1 .35-1.8 1-2.45C6 15.12 4 13 4 10c0-1.25.47-2.45 1.25-3.3C5 5.7 5 4.1 5.7 2.8c1.4.2 2.8.8 3.9 1.7a10 10 0 0 1 4.8 0c1.1-.9 2.5-1.5 3.9-1.7.7 1.3.7 2.9.45 3.9C19.53 7.55 20 8.75 20 10c0 3-2 5.12-6 5.55.65.65 1 1.45 1 2.45v3M9 18.9c-2.85 1.1-3.85-2.35-6-1.7'
 
 export default function Layout(props: RouteSectionProps) {
   const location = useLocation()
@@ -286,6 +292,14 @@ export default function Layout(props: RouteSectionProps) {
                 </A>
               )}
             </For>
+            <Show keyed when={githubUrl}>
+              {(href) => (
+                <a href={href} target="_self" class="site-nav-link">
+                  <OutlineIcon path={githubIconPath} />
+                  <span class="site-nav-label">GITHUB</span>
+                </a>
+              )}
+            </Show>
           </nav>
         </div>
       </header>

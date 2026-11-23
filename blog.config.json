@@ -1,5 +1,6 @@
 {
   "authorName": "SuperNailoong",
+  "githubUrl": "https://github.com/WeizhongQiu",
   "stickyHeader": false,
   "showBackToTop": false,
   "fontWeight": "normal",
@@ -21,8 +22,12 @@
       "show": true
     },
     "about": {
-      "show": true,
+      "show": false,
       "file": "ABOUT.md"
+    },
+    "notfound": {
+      "message": "Not Found",
+      "autoRedirect": true
     }
   }
 }

@@ -6,6 +6,7 @@ interface PageVisibility {
 
 interface BlogConfig {
   authorName: string
+  githubUrl?: string
   stickyHeader?: boolean
   showBackToTop?: boolean
   fontWeight?: string
@@ -16,6 +17,7 @@ interface BlogConfig {
     categories?: PageVisibility
     random?: PageVisibility
     about?: PageVisibility & { file?: string }
+    notfound?: { message?: string; autoRedirect?: boolean }
   }
 }
 
@@ -27,6 +29,7 @@ export const {
   stickyHeader = false,
 } = settings
 export const fontWeight = settings.fontWeight === 'normal' ? 'normal' : 'light'
+export const githubUrl = settings.githubUrl?.trim()
 
 export function isPageEnabled(
   name: 'timeline' | 'categories' | 'random' | 'about',

@@ -1,7 +1,9 @@
 import '@fontsource-variable/noto-sans-sc'
 import { A } from '@solidjs/router'
 import {
+  batch,
   createEffect,
+  createMemo,
   createSignal,
   For,
   on,
@@ -14,6 +16,9 @@ import { authorName } from '@/src/blog-config.ts'
 import { postPath } from '@/src/post-path.ts'
 import '@/src/styles/timeline-list.css'
 import type { PostMeta } from '@/src/types/post.ts'
+
+const rowRem = 2.14 // One line plus the timeline link's vertical padding.
+const overscan = 6
 
 const styles = /* css */ `
 .categories-page {
@@ -29,6 +34,7 @@ const styles = /* css */ `
   flex: 0 0 clamp(5.25rem, 23%, 12rem);
   flex-direction: column;
   min-inline-size: 0;
+  font-family: var(--display-font);
 }
 
 .categories-summary {
@@ -143,6 +149,7 @@ const styles = /* css */ `
   flex: 1;
   min-block-size: 0;
   overflow: auto;
+  overflow-anchor: none;
   overscroll-behavior: contain;
   padding-block-end: 2rem;
   scrollbar-width: none;
@@ -152,7 +159,14 @@ const styles = /* css */ `
   margin-inline-start: 3px;
 }
 
+.category-post-row {
+  position: absolute;
+  inset-inline: 0;
+  block-size: ${rowRem}rem;
+}
+
 .categories-results .timeline-link {
+  block-size: 100%;
   gap: clamp(0.4rem, 1.6vw, 0.9rem);
   padding-inline-start: clamp(0.6rem, 2vw, 1.1rem);
 }
@@ -178,15 +192,15 @@ const styles = /* css */ `
 
   .categories-buttons button,
   .categories-select,
-  .categories-results .timeline-list li {
+  .categories-scroll .category-post-row[data-intro] {
     animation: category-entry var(--category-entry-duration) linear
       var(--category-entry-delay, 0ms) both;
   }
 
-  .categories-results .timeline-list::before {
+  .categories-scroll .timeline-list[data-intro]::before {
     animation: category-track
       calc(var(--category-entry-duration) + var(--category-stagger))
-      linear both;
+      linear;
   }
 }
 
@@ -199,7 +213,7 @@ const styles = /* css */ `
 
 @keyframes category-track {
   from { transform: scaleY(0); }
-  to { transform: scaleY(1); }
+  to { transform: scaleY(var(--category-track-scale)); }
 }
 `
 
@@ -221,6 +235,138 @@ const categoryEntries = [...categories]
 const categoryEntryDelay = (index: number, count: number) =>
   `${index * Math.min(32, 360 / Math.max(1, count - 1))}ms`
 
+function CategoryTimeline(props: { articles: PostMeta[] }) {
+  const [viewport, setViewport] = createSignal({ height: 0, rowHeight: 0 })
+  const [scrollTop, setScrollTop] = createSignal(0)
+  const [focusedRow, setFocusedRow] = createSignal<number>()
+  const [introRows, setIntroRows] = createSignal(0)
+  let scroller!: HTMLDivElement
+
+  const start = createMemo(() => {
+    const { rowHeight } = viewport()
+    return rowHeight
+      ? Math.max(0, Math.floor(scrollTop() / rowHeight) - overscan)
+      : 0
+  })
+  const end = createMemo(() => {
+    const { height, rowHeight } = viewport()
+    return rowHeight
+      ? Math.min(
+          props.articles.length,
+          Math.ceil((scrollTop() + height) / rowHeight) + overscan,
+        )
+      : 0
+  })
+  const visibleRows = createMemo(() => {
+    const from = start()
+    const to = end()
+    const rows = Array.from({ length: to - from }, (_, index) => from + index)
+    const focused = focusedRow()
+    // Keep a focused link mounted when the viewport scrolls away from it.
+    if (focused !== undefined) {
+      if (focused < from) rows.unshift(focused)
+      else if (focused >= to) rows.push(focused)
+    }
+    return rows
+  })
+
+  onMount(() => {
+    const measure = () => {
+      const rem = parseFloat(
+        getComputedStyle(document.documentElement).fontSize,
+      )
+      batch(() => {
+        setViewport({ height: scroller.clientHeight, rowHeight: rowRem * rem })
+        setScrollTop(scroller.scrollTop)
+      })
+    }
+    measure()
+    if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      const { height, rowHeight } = viewport()
+      setIntroRows(
+        Math.min(props.articles.length, Math.ceil(height / rowHeight)),
+      )
+    }
+    const observer = new ResizeObserver(measure)
+    observer.observe(scroller)
+    onCleanup(() => observer.disconnect())
+  })
+
+  function handleScroll() {
+    const top = scroller.scrollTop
+    batch(() => {
+      setScrollTop(top)
+      if (top > 0) setIntroRows(0)
+    })
+  }
+
+  return (
+    <div
+      ref={scroller}
+      class="categories-scroll"
+      role="region"
+      aria-label="文章时间线"
+      tabIndex={0}
+      onScroll={handleScroll}
+    >
+      <Show
+        when={props.articles.length}
+        fallback={<p class="muted">暂无文章。</p>}
+      >
+        <ul
+          class="timeline-list"
+          role="list"
+          data-intro={introRows() ? '' : undefined}
+          style={{
+            'block-size': `${props.articles.length * rowRem}rem`,
+            '--category-stagger': introRows()
+              ? categoryEntryDelay(introRows() - 1, introRows())
+              : undefined,
+            '--category-track-scale': introRows() / props.articles.length,
+          }}
+          onAnimationEnd={(event) => {
+            if (event.animationName === 'category-track') setIntroRows(0)
+          }}
+        >
+          <For each={visibleRows()}>
+            {(index) => {
+              const post = props.articles[index]
+              const day = post.createdDate.slice(0, 10)
+              const date = monthAndDay.format(new Date(day)).toUpperCase()
+              return (
+                <li
+                  class="category-post-row"
+                  aria-posinset={index + 1}
+                  aria-setsize={props.articles.length}
+                  data-intro={index < introRows() ? '' : undefined}
+                  style={{
+                    'inset-block-start': `${index * rowRem}rem`,
+                    '--category-entry-delay':
+                      index < introRows()
+                        ? categoryEntryDelay(index, introRows())
+                        : undefined,
+                  }}
+                >
+                  <A
+                    href={postPath(post.fileName)}
+                    class="timeline-link"
+                    onFocus={() => setFocusedRow(index)}
+                    onBlur={() => setFocusedRow(undefined)}
+                  >
+                    <time dateTime={day}>{date}</time>
+                    <span class="timeline-link-title">{post.title}</span>
+                    <span class="category-post-year">{day.slice(0, 4)}</span>
+                  </A>
+                </li>
+              )
+            }}
+          </For>
+        </ul>
+      </Show>
+    </div>
+  )
+}
+
 export default function CategoriesPage() {
   document.title = `分类 | ${authorName}`
 
@@ -229,7 +375,6 @@ export default function CategoriesPage() {
   const selectedPosts = () => categories.get(selected())
   let options!: HTMLDivElement
   let buttons!: HTMLDivElement
-  let timeline!: HTMLDivElement
 
   onMount(() => {
     function updateButtons() {
@@ -252,12 +397,6 @@ export default function CategoriesPage() {
     observer.observe(buttons)
     onCleanup(() => observer.disconnect())
   })
-
-  function selectCategory(category: string) {
-    if (category === selected()) return
-    setSelected(category)
-    timeline.scrollTop = 0
-  }
 
   return (
     <section class="viewport-page categories-page" aria-label="分类选集">
@@ -282,7 +421,7 @@ export default function CategoriesPage() {
                       categoryEntries.length,
                     ),
                   }}
-                  onClick={() => selectCategory(category)}
+                  onClick={() => setSelected(category)}
                 >
                   {category}
                   <span class="categories-count">{articles.length}</span>
@@ -294,7 +433,7 @@ export default function CategoriesPage() {
             <select
               class="categories-select"
               aria-label="选择分类"
-              onChange={(event) => selectCategory(event.currentTarget.value)}
+              onChange={(event) => setSelected(event.currentTarget.value)}
             >
               <For each={categoryEntries}>
                 {([category, articles]) => (
@@ -314,64 +453,9 @@ export default function CategoriesPage() {
           </h1>
           <p># {selected()}</p>
         </header>
-        <div
-          ref={timeline}
-          class="categories-scroll"
-          role="region"
-          aria-label="文章时间线"
-          tabIndex={0}
-        >
-          <Show keyed when={selectedPosts()}>
-            {(articles) => (
-              <Show
-                when={articles.length}
-                fallback={<p class="muted">暂无文章。</p>}
-              >
-                <ul
-                  class="timeline-list"
-                  style={{
-                    '--category-stagger': categoryEntryDelay(
-                      articles.length - 1,
-                      articles.length,
-                    ),
-                  }}
-                >
-                  <For each={articles}>
-                    {(post, index) => {
-                      const day = post.createdDate.slice(0, 10)
-                      const date = monthAndDay
-                        .format(new Date(day))
-                        .toUpperCase()
-                      return (
-                        <li
-                          style={{
-                            '--category-entry-delay': categoryEntryDelay(
-                              index(),
-                              articles.length,
-                            ),
-                          }}
-                        >
-                          <A
-                            href={postPath(post.fileName)}
-                            class="timeline-link"
-                          >
-                            <time dateTime={day}>{date}</time>
-                            <span class="timeline-link-title">
-                              {post.title}
-                            </span>
-                            <span class="category-post-year">
-                              {day.slice(0, 4)}
-                            </span>
-                          </A>
-                        </li>
-                      )
-                    }}
-                  </For>
-                </ul>
-              </Show>
-            )}
-          </Show>
-        </div>
+        <Show keyed when={selectedPosts()}>
+          {(articles) => <CategoryTimeline articles={articles} />}
+        </Show>
       </section>
     </section>
   )
