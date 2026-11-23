@@ -107,6 +107,7 @@ async function createMarkdownRenderer() {
     render: (source: string, displayMode: boolean) =>
       renderToString(source, {
         displayMode,
+        output: 'mathml',
         strict: 'ignore',
         throwOnError: true,
         trust: false,

@@ -1,13 +1,7 @@
 :root {
   scrollbar-width: none;
-  font-family:
-    'Noto Sans SC Variable', system-ui, 'PingFang SC', 'Microsoft YaHei',
-    'Noto Sans CJK SC', sans-serif;
-  font-weight: 300;
-  --display-font:
-    Georgia, 'Iowan Old Style', 'Palatino Linotype', 'Noto Serif',
-    'Liberation Serif', 'Songti SC', 'Noto Serif CJK SC', 'Source Han Serif SC',
-    SimSun, serif;
+  font-family: system-ui, sans-serif;
+  --display-font: Georgia, serif;
   color: var(--ink);
   background: var(--paper);
   line-height: 1.6;
@@ -18,11 +12,6 @@
   --selection: #e5d8c5;
   --header-height: 5rem;
   --reading-width: 46rem;
-}
-
-:root[data-font-weight='normal'] {
-  font-weight: 400;
-  --content-color: var(--muted);
 }
 
 * {
@@ -49,7 +38,7 @@ pre,
 code,
 kbd,
 samp {
-  font-family: ui-monospace, Menlo, Consolas, 'Liberation Mono', monospace;
+  font-family: ui-monospace, monospace;
   font-size: 0.875em;
 }
 

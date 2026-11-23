@@ -1,4 +1,3 @@
-import '@fontsource-variable/noto-sans-sc'
 import { useParams } from '@solidjs/router'
 import { createEffect, createMemo, createResource, Show } from 'solid-js'
 import type { ParentProps } from 'solid-js'

@@ -1,4 +1,3 @@
-import 'katex/dist/katex.min.css'
 import { onCleanup } from 'solid-js'
 
 const styles = /* css */ `
@@ -106,15 +105,23 @@ const styles = /* css */ `
   white-space: nowrap;
 }
 
-.markdown-body .katex-display > .katex {
-  inline-size: max-content;
-  min-inline-size: 100%;
-  /* Leave room for fallback glyphs that extend beyond KaTeX's font metrics. */
-  padding-block: 0.45em;
+.markdown-body .katex:has(> math[display='block']) {
+  display: block;
+  margin-block: 1em;
+  overflow-x: auto;
 }
 
-.markdown-code pre,
-.markdown-body .katex-display {
+.markdown-body math {
+  font-family: 'Cambria Math', 'STIX Two Math', 'DejaVu Math TeX Gyre', math;
+}
+
+.markdown-body math[display='block'] {
+  inline-size: max-content;
+  min-inline-size: 100%;
+  padding-block: 0.25em;
+}
+
+.markdown-code pre {
   overflow-x: auto;
 }
 `

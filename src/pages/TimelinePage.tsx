@@ -1,4 +1,3 @@
-import '@fontsource-variable/noto-sans-sc'
 import { A, useLocation, useNavigate } from '@solidjs/router'
 import {
   createEffect,

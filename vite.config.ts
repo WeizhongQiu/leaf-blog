@@ -22,18 +22,6 @@ export default defineConfig({
   },
   resolve: { tsconfigPaths: true },
   plugins: [
-    {
-      name: 'leaf-blog:font-display',
-      enforce: 'pre',
-      transform(source, id) {
-        if (id.endsWith('/@fontsource-variable/noto-sans-sc/index.css')) {
-          return source.replaceAll(
-            'font-display: swap;',
-            'font-display: optional;',
-          )
-        }
-      },
-    },
     solid(),
     blogContent(
       resolve(import.meta.dirname, directory),

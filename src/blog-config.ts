@@ -9,7 +9,6 @@ interface BlogConfig {
   githubUrl?: string
   stickyHeader?: boolean
   showBackToTop?: boolean
-  fontWeight?: string
   page: {
     homepage: { subtitle?: string }
     post: { directory: string; tocAutoHide?: boolean }
@@ -28,7 +27,6 @@ export const {
   showBackToTop = true,
   stickyHeader = false,
 } = settings
-export const fontWeight = settings.fontWeight === 'normal' ? 'normal' : 'light'
 export const githubUrl = settings.githubUrl?.trim()
 
 export function isPageEnabled(

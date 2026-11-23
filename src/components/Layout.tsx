@@ -18,7 +18,7 @@ const styles = /* css */ `
 }
 
 main.site-shell {
-  color: var(--content-color, var(--ink));
+  color: var(--muted);
 }
 
 #root:has(> main > .viewport-page) {

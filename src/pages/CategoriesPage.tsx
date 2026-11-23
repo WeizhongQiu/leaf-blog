@@ -1,4 +1,3 @@
-import '@fontsource-variable/noto-sans-sc'
 import { A } from '@solidjs/router'
 import {
   batch,
