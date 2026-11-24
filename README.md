@@ -1,12 +1,6 @@
-<p align="center">
-  <img src="public/favicon.svg" alt="Leaf Blog 的墨叶图标" width="72" height="72" />
-</p>
-
 # Leaf Blog
 
 使用 Solid、TypeScript 和 Vite 的 Markdown 博客。提供首页、时间线、分类、文章页、随机文章和 About 页面。
-
-标签页使用墨叶图标，浅色模式为暖棕色，深色模式为米色。
 
 ## 环境与运行
 

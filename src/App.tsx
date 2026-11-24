@@ -2,6 +2,7 @@ import { Router, Route } from '@solidjs/router'
 import { lazy } from 'solid-js'
 import Layout from '@/src/components/Layout.tsx'
 import HomePage from '@/src/pages/HomePage.tsx'
+import { getPostLoader, loadPost } from '@/src/post-loader.ts'
 
 const TimelinePage =
   __ENABLE_TIMELINE__ && lazy(() => import('@/src/pages/TimelinePage.tsx'))
@@ -23,7 +24,14 @@ export default function App() {
         <Route path="/categories" component={CategoriesPage} />
       )}
       {RandomPage && <Route path="/random" component={RandomPage} />}
-      <Route path="/posts/:fileName" component={PostPage} />
+      <Route
+        path="/posts/:fileName"
+        component={PostPage}
+        preload={({ params }) => {
+          const loader = getPostLoader(params.fileName)
+          if (loader) void loadPost(loader).catch(() => {})
+        }}
+      />
       {AboutPage && <Route path="/about" component={AboutPage} />}
       <Route path="/*all" component={NotFoundPage} />
     </Router>

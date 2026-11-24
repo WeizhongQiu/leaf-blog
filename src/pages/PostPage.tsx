@@ -1,13 +1,22 @@
-import { useParams } from '@solidjs/router'
-import { createEffect, createMemo, createResource, Show } from 'solid-js'
+import { useLocation, useParams } from '@solidjs/router'
+import {
+  createEffect,
+  createMemo,
+  createResource,
+  lazy,
+  onMount,
+  Show,
+  untrack,
+} from 'solid-js'
 import type { ParentProps } from 'solid-js'
-import loaders from 'virtual:blog/loaders'
 import { authorName } from '@/src/blog-config.ts'
 import MarkdownBody from '@/src/components/MarkdownBody.tsx'
 import OutlineIcon, { categoryIconPath } from '@/src/components/OutlineIcon.tsx'
 import PostContents from '@/src/components/PostContents.tsx'
-import NotFoundPage from '@/src/pages/NotFoundPage.tsx'
+import { getPostLoader, loadPost } from '@/src/post-loader.ts'
 import type { PostLoader, RenderedPost } from '@/src/types/post.ts'
+
+const NotFoundPage = lazy(() => import('@/src/pages/NotFoundPage.tsx'))
 
 const styles = /* css */ `
 .post-header {
@@ -63,6 +72,19 @@ const styles = /* css */ `
   align-items: flex-start;
   gap: 3rem;
 }
+
+@keyframes post-content-enter {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  [data-staggered-entry] :is(.post-header, .post-contents),
+  [data-staggered-entry] .markdown-body > * {
+    animation: post-content-enter 160ms ease-out
+      var(--post-entry-delay, 0ms) backwards;
+  }
+}
 `
 
 const createdIcon =
@@ -83,12 +105,33 @@ function PostMetaItem(props: ParentProps<{ icon: string; label: string }>) {
 }
 
 function ReadingView(props: { post: RenderedPost }) {
+  const location = useLocation()
+  // Keep the entry mode fixed while readers follow headings within the article.
+  const staggeredEntry = untrack(() => !location.hash)
+  let layout!: HTMLDivElement
+
+  onMount(() => {
+    if (!staggeredEntry) return
+
+    const blocks = layout.querySelectorAll<HTMLElement>(
+      ':scope > .markdown-body > *',
+    )
+    const stepMs = 42
+
+    blocks.forEach((block, index) => {
+      block.style.setProperty('--post-entry-delay', `${index * stepMs}ms`)
+    })
+  })
+
   createEffect(() => {
     document.title = `${props.post.meta.title} | ${authorName}`
   })
 
   return (
-    <div class="page-content">
+    <div
+      class="page-content"
+      data-staggered-entry={staggeredEntry ? '' : undefined}
+    >
       <style>{styles}</style>
       <header class="post-header">
         <h1 class="page-title">{props.post.meta.title}</h1>
@@ -111,7 +154,7 @@ function ReadingView(props: { post: RenderedPost }) {
           </PostMetaItem>
         </p>
       </header>
-      <div class="post-layout">
+      <div ref={layout} class="post-layout">
         <MarkdownBody html={props.post.html} />
         <Show when={props.post.headings.length}>
           <PostContents headings={props.post.headings} />
@@ -122,9 +165,7 @@ function ReadingView(props: { post: RenderedPost }) {
 }
 
 function LoadPost(props: { load: PostLoader }) {
-  const [post, { refetch }] = createResource(
-    async () => (await props.load()).default,
-  )
+  const [post, { refetch }] = createResource(() => loadPost(props.load))
 
   return (
     <Show
@@ -136,15 +177,7 @@ function LoadPost(props: { load: PostLoader }) {
         </div>
       }
     >
-      <Show
-        when={post()}
-        keyed
-        fallback={
-          <p class="page-content muted" role="status">
-            正在加载文章…
-          </p>
-        }
-      >
+      <Show when={post()} keyed>
         {(article) => <ReadingView post={article} />}
       </Show>
     </Show>
@@ -153,14 +186,7 @@ function LoadPost(props: { load: PostLoader }) {
 
 export default function PostPage() {
   const params = useParams<{ fileName: string }>()
-  const loader = createMemo(() => {
-    try {
-      return loaders[decodeURIComponent(params.fileName)]
-    } catch (cause) {
-      if (cause instanceof URIError) return undefined
-      throw cause
-    }
-  })
+  const loader = createMemo(() => getPostLoader(params.fileName))
 
   return (
     <Show when={loader()} keyed fallback={<NotFoundPage />}>

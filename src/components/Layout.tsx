@@ -1,6 +1,15 @@
 import { A, useBeforeLeave, useIsRouting, useLocation } from '@solidjs/router'
 import type { RouteSectionProps } from '@solidjs/router'
-import { createEffect, For, onCleanup, onMount, Show, Suspense } from 'solid-js'
+import type { ParentProps } from 'solid-js'
+import {
+  createEffect,
+  createSignal,
+  For,
+  onCleanup,
+  onMount,
+  Show,
+  Suspense,
+} from 'solid-js'
 import {
   authorName,
   githubUrl,
@@ -169,9 +178,16 @@ const navigation = [
 const githubIconPath =
   'M9 21v-3c0-1 .35-1.8 1-2.45C6 15.12 4 13 4 10c0-1.25.47-2.45 1.25-3.3C5 5.7 5 4.1 5.7 2.8c1.4.2 2.8.8 3.9 1.7a10 10 0 0 1 4.8 0c1.1-.9 2.5-1.5 3.9-1.7.7 1.3.7 2.9.45 3.9C19.53 7.55 20 8.75 20 10c0 3-2 5.12-6 5.55.65.65 1 1.45 1 2.45v3M9 18.9c-2.85 1.1-3.85-2.35-6-1.7'
 
+function RouteContent(props: ParentProps<{ onReady: () => void }>) {
+  // Suspense defers mount effects until the route and its resources are ready.
+  onMount(() => props.onReady())
+  return <>{props.children}</>
+}
+
 export default function Layout(props: RouteSectionProps) {
   const location = useLocation()
   const isRouting = useIsRouting()
+  const [initialContentReady, setInitialContentReady] = createSignal(false)
   let header!: HTMLElement
   let main!: HTMLElement
   let motion: MediaQueryList | undefined
@@ -208,7 +224,7 @@ export default function Layout(props: RouteSectionProps) {
       easing: 'ease-in',
       fill: 'forwards',
     })
-    void animation.finished.then(resumeNavigation, () => {})
+    void animation.finished.then(resumeNavigation, () => { })
   })
 
   onMount(() => {
@@ -234,7 +250,12 @@ export default function Layout(props: RouteSectionProps) {
 
     createEffect(() => {
       const path = location.pathname
-      if (isRouting() || retryNavigation || (path === previousPath && !leaving))
+      if (
+        !initialContentReady() ||
+        isRouting() ||
+        retryNavigation ||
+        (path === previousPath && !leaving)
+      )
         return
 
       const opening = previousPath === undefined
@@ -242,10 +263,14 @@ export default function Layout(props: RouteSectionProps) {
       previousPath = path
       leaving = false
       animation?.cancel()
-      if (preference.matches || (opening && path !== '/')) return
+      if (
+        preference.matches ||
+        main.firstElementChild?.hasAttribute('data-staggered-entry')
+      )
+        return
 
       animation = main.animate([{ opacity: startOpacity }, { opacity: 1 }], {
-        duration: opening ? 420 : 280,
+        duration: opening ? 420 : 160,
         easing: 'ease-out',
       })
     })
@@ -304,14 +329,10 @@ export default function Layout(props: RouteSectionProps) {
         </div>
       </header>
       <main ref={main} class="site-shell">
-        <Suspense
-          fallback={
-            <p class="page-content muted" role="status">
-              正在加载…
-            </p>
-          }
-        >
-          {props.children}
+        <Suspense>
+          <RouteContent onReady={() => setInitialContentReady(true)}>
+            {props.children}
+          </RouteContent>
         </Suspense>
       </main>
       <Show when={showBackToTop}>
