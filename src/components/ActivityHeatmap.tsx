@@ -71,6 +71,14 @@ const styles = /* css */ `
   pointer-events: none;
   transform: translate(-50%, calc(-100% - 8px));
 }
+
+.activity-tooltip-titles {
+  margin: 0.25rem 0 0;
+  padding: 0;
+  list-style: none;
+  color: var(--muted);
+  overflow-wrap: anywhere;
+}
 `
 
 const day = 86_400_000
@@ -102,6 +110,7 @@ export default function ActivityHeatmap(props: {
   onDateClick: (date: string, event: MouseEvent) => void
 }) {
   const [tooltip, setTooltip] = createSignal<{
+    date: string
     label: string
     x: number
     y: number
@@ -109,18 +118,27 @@ export default function ActivityHeatmap(props: {
 
   const showAtPointer = (event: PointerEvent) => {
     if (event.pointerType === 'touch') return
-    const label = (event.target as HTMLElement).dataset.activityLabel
+    const { activityDate: date, activityLabel: label } = (
+      event.target as HTMLElement
+    ).dataset
     setTooltip(
-      label ? { label, x: event.clientX, y: event.clientY } : undefined,
+      date && label
+        ? { date, label, x: event.clientX, y: event.clientY }
+        : undefined,
     )
   }
 
   const showAtFocus = (event: FocusEvent) => {
     const cell = event.target as HTMLElement
-    const label = cell.dataset.activityLabel
-    if (!label) return
+    const { activityDate: date, activityLabel: label } = cell.dataset
+    if (!date || !label) return
     const bounds = cell.getBoundingClientRect()
-    setTooltip({ label, x: bounds.left + bounds.width / 2, y: bounds.top })
+    setTooltip({
+      date,
+      label,
+      x: bounds.left + bounds.width / 2,
+      y: bounds.top,
+    })
   }
 
   const now = new Date()
@@ -134,10 +152,12 @@ export default function ActivityHeatmap(props: {
   const end = Date.UTC(year, month, today)
 
   const calendar = createMemo(() => {
-    const counts = new Map<string, number>()
-    for (const { createdDate } of props.posts) {
+    const titlesByDate = new Map<string, string[]>()
+    for (const { createdDate, title } of props.posts) {
       const date = createdDate.slice(0, 10)
-      counts.set(date, (counts.get(date) ?? 0) + 1)
+      const titles = titlesByDate.get(date)
+      if (titles) titles.push(title)
+      else titlesByDate.set(date, [title])
     }
 
     const gridStart = start - ((new Date(start).getUTCDay() + 6) % 7) * day
@@ -151,19 +171,22 @@ export default function ActivityHeatmap(props: {
 
       const date = new Date(time)
       const key = dateKey(time)
-      const count = counts.get(key) ?? 0
+      const titles = titlesByDate.get(key)
+      const count = titles?.length ?? 0
       const week = Math.floor(index / 7) + 1
       if (time === start || date.getUTCDate() === 1) {
         labels.push({ week, text: monthLabel.format(date).toUpperCase() })
       }
       total += count
       const label = `${count} ${count === 1 ? 'post' : 'posts'} on ${tooltipMonth.format(date)} ${formatDay(date.getUTCDate())}`
-      return { key, count, label }
+      const ariaLabel = titles ? `${label}. ${titles.join('. ')}` : label
+      return { key, count, label, ariaLabel }
     })
 
     return {
       weeks,
       days,
+      titlesByDate,
       label: `${dateKey(start)} 至 ${dateKey(end)}，共 ${total} 篇文章`,
       labels: labels.filter(
         ({ week }, i) =>
@@ -208,8 +231,9 @@ export default function ActivityHeatmap(props: {
                     const attributes = {
                       class: 'activity-day',
                       'data-level': Math.min(entry.count, 4),
+                      'data-activity-date': entry.key,
                       'data-activity-label': entry.label,
-                      'aria-label': entry.label,
+                      'aria-label': entry.ariaLabel,
                       lang: 'en',
                     }
                     return entry.count ? (
@@ -238,13 +262,19 @@ export default function ActivityHeatmap(props: {
             <div
               class="activity-tooltip"
               aria-hidden="true"
-              lang="en"
               style={{
                 '--activity-tip-x': `${tip().x}px`,
                 '--activity-tip-y': `${tip().y}px`,
               }}
             >
-              {tip().label}
+              <div lang="en">{tip().label}</div>
+              <Show when={calendar().titlesByDate.get(tip().date)}>
+                {(titles) => (
+                  <ul class="activity-tooltip-titles">
+                    <For each={titles()}>{(title) => <li>{title}</li>}</For>
+                  </ul>
+                )}
+              </Show>
             </div>
           </Portal>
         )}

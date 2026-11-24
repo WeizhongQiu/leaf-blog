@@ -1,6 +1,6 @@
 # Leaf Blog
 
-使用 Solid、TypeScript 和 Vite 的 Markdown 博客。提供首页、时间线、分类、文章页、随机文章和 About 页面。
+使用 Solid, TypeScript 和 Vite 的 Markdown 博客。提供首页、时间线、分类、文章页、随机文章和 About 页面。
 
 ## 环境与运行
 
@@ -29,7 +29,7 @@ pnpm preview
 | ------------------- | ------------------------------------------------- |
 | `pnpm dev`          | 启动开发服务                                      |
 | `pnpm typecheck`    | 检查应用、内容处理代码和工具配置的类型            |
-| `pnpm lint`         | 检查 TypeScript、Solid 响应式用法和浏览器导入边界 |
+| `pnpm lint`         | 检查 TypeScript, Solid 响应式用法和浏览器导入边界 |
 | `pnpm format:check` | 检查代码与文档格式                                |
 | `pnpm format`       | 格式化代码与文档                                  |
 | `pnpm build`        | 检查类型、编译文章并构建到 `dist/`                |
@@ -51,7 +51,7 @@ pnpm preview
 - `vite.config.ts`：接入 Solid JSX/TSX 转换和博客内容插件。
 - `tsconfig.app.json` / `tsconfig.node.json`：分别约束浏览器与构建端类型环境。
 - `tsconfig.paths.json`：声明 `@/` 指向项目根目录。应用内导入和构建端类型导入可写成 `@/src/types/post.ts`。Vite 加载配置时沿用相对路径。
-- `eslint.config.js`：Solid、TypeScript 规则及浏览器导入 Node.js 模块的限制。
+- `eslint.config.js`：Solid, TypeScript 规则及浏览器导入 Node.js 模块的限制。
 
 新增页面时，直接在 `src/pages/` 添加 TSX 文件，把专用样式写进组件。样式较长时，可以放到 `src/styles/` 并由对应组件导入。在 `src/App.tsx` 注册路由，并按需在 `src/components/Layout.tsx` 增加导航。组件式路由使用与 Solid 1.x 兼容的 `@solidjs/router` 0.15。
 
@@ -124,3 +124,4 @@ date modified: Sunday, November 22nd 2026, 9:45:00 pm
 - [ ] 性能优化
 - [ ] 正文样式美化
 - [ ] 新增 `pagefinder` 搜索模块
+- [ ] 新增 mermaid 渲染

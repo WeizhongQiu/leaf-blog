@@ -1,7 +1,7 @@
 :root {
   scrollbar-width: none;
   font-family: system-ui, sans-serif;
-  --display-font: Georgia, serif;
+  --display-font: serif;
   color: var(--ink);
   background: var(--paper);
   line-height: 1.6;
